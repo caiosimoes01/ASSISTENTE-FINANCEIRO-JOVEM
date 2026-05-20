@@ -5,7 +5,7 @@ describe('financeApi services', () => {
   const originalFetch = global.fetch;
 
   beforeEach(() => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => { });
   });
 
   afterEach(() => {
@@ -38,7 +38,7 @@ describe('financeApi services', () => {
       const mockResponse = [
         { data: '18/05/2026', valor: '10,25' }
       ];
-      
+
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => mockResponse,
@@ -54,7 +54,7 @@ describe('financeApi services', () => {
         { data: '17/05/2026', valor: '10.15' },
         { data: '18/05/2026', valor: '10.50' }
       ];
-      
+
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: async () => mockResponse,
