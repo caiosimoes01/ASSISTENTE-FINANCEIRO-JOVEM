@@ -8,7 +8,7 @@ import {
   ChevronUp, Plus, Trash2, CheckCircle, BarChart2,
   RefreshCw, Lightbulb, Calculator, ChevronRight
 } from "lucide-react";
-import { useSimulation } from "@hooks/useSimulation";
+import { useSimulation, type ChartPoint } from "@hooks/useSimulation";
 import { CompoundInterestEngine } from "@core/finance/engine/CompoundInterestEngine";
 import { formatCurrency, formatPercentage, parseBRL, formatTimeSpan } from "@utils/formatadores";
 import type { SnapshotMensal } from "../../types/financeiro";
@@ -17,24 +17,24 @@ import type { SnapshotMensal } from "../../types/financeiro";
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────
 const C = {
-  bg: "#0A0F1A",
-  surface: "#111827",
-  surfaceEl: "#1A2235",
-  border: "#1E2D45",
-  borderLt: "#2A3F5F",
-  green: "#10B981",
-  greenDark: "#059669",
-  greenGlow: "rgba(16,185,129,0.15)",
-  greenDim: "rgba(16,185,129,0.08)",
-  blue: "#3B82F6",
-  blueDim: "rgba(59,130,246,0.1)",
+  bg: "#09090B",
+  surface: "rgba(24, 24, 27, 0.4)", // bg-zinc-900/40
+  surfaceEl: "rgba(24, 24, 27, 0.6)", // bg-zinc-900/60
+  border: "rgba(63, 63, 70, 0.8)", // border-zinc-800/80
+  borderLt: "rgba(63, 63, 70, 0.5)", // border-zinc-800/50
+  green: "#10B981", // emerald-500
+  greenDark: "#047857", // emerald-700
+  greenGlow: "rgba(16, 185, 129, 0.15)",
+  greenDim: "rgba(16, 185, 129, 0.08)",
+  blue: "#10B981",
+  blueDim: "rgba(16, 185, 129, 0.08)",
   amber: "#F59E0B",
-  amberDim: "rgba(245,158,11,0.1)",
+  amberDim: "rgba(245, 158, 11, 0.1)",
   red: "#EF4444",
-  redDim: "rgba(239,68,68,0.1)",
-  text: "#F1F5F9",
-  textSoft: "#94A3B8",
-  textMuted: "#475569",
+  redDim: "rgba(239, 68, 68, 0.1)",
+  text: "#FFFFFF",
+  textSoft: "#A1A1AA",
+  textMuted: "#71717A",
 };
 
 // ─────────────────────────────────────────────────────────
@@ -54,13 +54,13 @@ interface Investimento {
 }
 
 const INVESTIMENTOS: Investimento[] = [
-  { id: "poupanca", nome: "Poupança", taxaAnualPadrao: 6.17, risco: 1, liquidez: "D+0", prazo: "Curto", fgc: true, ir: false, cor: "#6EE7B7", desc: "Segurança máxima, menor rendimento anual." },
-  { id: "selic", nome: "Tesouro Selic", taxaAnualPadrao: 10.50, risco: 1, liquidez: "D+1", prazo: "Curto/Médio", fgc: false, ir: true, cor: "#3B82F6", desc: "Garantido pelo governo federal. Acompanha a Selic." },
-  { id: "cdb", nome: "CDB 100% CDI", taxaAnualPadrao: 10.50, risco: 2, liquidez: "D+0/D+1", prazo: "Curto/Médio", fgc: true, ir: true, cor: "#818CF8", desc: "Coberto pelo FGC até R$ 250k por instituição financeira." },
-  { id: "lci", nome: "LCI / LCA", taxaAnualPadrao: 9.45, risco: 2, liquidez: "90+ dias", prazo: "Médio", fgc: true, ir: false, cor: "#38BDF8", desc: "Isento de Imposto de Renda. Carência mínima obrigatória." },
-  { id: "multi", nome: "Multimercado", taxaAnualPadrao: 12.68, risco: 3, liquidez: "D+30", prazo: "Médio/Longo", fgc: false, ir: true, cor: "#F59E0B", desc: "Diversificado. Rentabilidade varia conforme gestão do fundo." },
-  { id: "fiis", nome: "FIIs (Fundos Imobiliários)", taxaAnualPadrao: 10.70, risco: 4, liquidez: "D+2", prazo: "Longo", fgc: false, ir: false, cor: "#A78BFA", desc: "Rendimento mensal isento de Imposto de Renda para pessoa física." },
-  { id: "acoes", nome: "Ações / ETFs", taxaAnualPadrao: 15.39, risco: 5, liquidez: "D+2", prazo: "Longo (5+a)", fgc: false, ir: true, cor: "#F87171", desc: "Maior potencial de crescimento, sujeito à volatilidade da bolsa." },
+  { id: "poupanca", nome: "Poupança", taxaAnualPadrao: 6.17, risco: 1, liquidez: "D+0", prazo: "Curto", fgc: true, ir: false, cor: "#10B981", desc: "Segurança máxima, menor rendimento anual." },
+  { id: "selic", nome: "Tesouro Selic", taxaAnualPadrao: 10.50, risco: 1, liquidez: "D+1", prazo: "Curto/Médio", fgc: false, ir: true, cor: "#10B981", desc: "Garantido pelo governo federal. Acompanha a Selic." },
+  { id: "cdb", nome: "CDB 100% CDI", taxaAnualPadrao: 10.50, risco: 2, liquidez: "D+0/D+1", prazo: "Curto/Médio", fgc: true, ir: true, cor: "#34D399", desc: "Coberto pelo FGC até R$ 250k por instituição financeira." },
+  { id: "lci", nome: "LCI / LCA", taxaAnualPadrao: 9.45, risco: 2, liquidez: "90+ dias", prazo: "Médio", fgc: true, ir: false, cor: "#059669", desc: "Isento de Imposto de Renda. Carência mínima obrigatória." },
+  { id: "multi", nome: "Multimercado", taxaAnualPadrao: 12.68, risco: 3, liquidez: "D+30", prazo: "Médio/Longo", fgc: false, ir: true, cor: "#047857", desc: "Diversificado. Rentabilidade varia conforme gestão do fundo." },
+  { id: "fiis", nome: "FIIs (Fundos Imobiliários)", taxaAnualPadrao: 10.70, risco: 4, liquidez: "D+2", prazo: "Longo", fgc: false, ir: false, cor: "#34D399", desc: "Rendimento mensal isento de Imposto de Renda para pessoa física." },
+  { id: "acoes", nome: "Ações / ETFs", taxaAnualPadrao: 15.39, risco: 5, liquidez: "D+2", prazo: "Longo (5+a)", fgc: false, ir: true, cor: "#6EE7B7", desc: "Maior potencial de crescimento, sujeito à volatilidade da bolsa." },
 ];
 
 const RLABELS = ["", "Mínimo", "Baixo", "Médio", "Médio-Alto", "Alto"];
@@ -149,19 +149,16 @@ interface BadgeProps {
   children: React.ReactNode;
   cor?: string;
 }
-function Badge({ children, cor = C.green }: BadgeProps) {
+function Badge({ children, cor = "#10B981" }: BadgeProps) {
   return (
-    <span style={{
-      background: `${cor}20`,
-      color: cor,
-      border: `1px solid ${cor}40`,
-      fontSize: "0.65rem",
-      fontWeight: 700,
-      padding: "2px 8px",
-      borderRadius: 999,
-      letterSpacing: "0.04em",
-      whiteSpace: "nowrap"
-    }}>
+    <span
+      className="text-[10px] font-bold px-2 py-0.5 rounded-full tracking-wider whitespace-nowrap border transition-all duration-300"
+      style={{
+        backgroundColor: `${cor}15`,
+        color: cor,
+        borderColor: `${cor}30`
+      }}
+    >
       {children}
     </span>
   );
@@ -176,40 +173,43 @@ interface NumInputProps {
   prefix?: string;
   suffix?: string;
   placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  benchmarks?: { label: string; value: number }[];
 }
-function NumInput({ label, hint, emoji, value, onChange, prefix = "R$", suffix = "", placeholder = "0" }: NumInputProps) {
+
+function NumInput({
+  label,
+  hint,
+  emoji,
+  value,
+  onChange,
+  prefix = "R$",
+  suffix = "",
+  placeholder = "0",
+  min,
+  max,
+  step = 1,
+  benchmarks
+}: NumInputProps) {
   const [focused, setFocused] = useState(false);
   return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-        <span style={{ fontSize: "0.78rem", fontWeight: 600, color: C.text, display: "flex", alignItems: "center", gap: 6 }}>
-          {emoji && <span style={{ fontSize: "0.9rem" }}>{emoji}</span>} {label}
-          {hint && <span style={{ fontSize: "0.68rem", color: C.textMuted, fontWeight: 400 }}>{hint}</span>}
+    <div className="mb-4 text-left">
+      <div className="flex justify-between items-baseline mb-2">
+        <span className="text-xs font-bold text-zinc-100 flex items-center gap-1.5">
+          {emoji && <span className="text-sm">{emoji}</span>} {label}
+          {hint && <span className="text-[10px] text-zinc-400 font-normal">({hint})</span>}
         </span>
       </div>
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        background: C.surfaceEl,
-        border: `1.5px solid ${focused ? C.green : C.border}`,
-        borderRadius: 10,
-        overflow: "hidden",
-        transition: "border-color 0.15s",
-        boxShadow: focused ? `0 0 0 3px ${C.greenDim}` : "none",
-      }}>
+      
+      <div className={`flex items-center bg-zinc-950/60 border rounded-xl overflow-hidden transition-all duration-300 ${
+        focused
+          ? "border-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+          : "border-zinc-800/80 hover:border-zinc-700"
+      }`}>
         {prefix && (
-          <span style={{
-            padding: "0 12px",
-            fontSize: "0.85rem",
-            color: C.textMuted,
-            borderRight: `1px solid ${C.border}`,
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            background: C.surface,
-            paddingTop: 12,
-            paddingBottom: 12
-          }}>
+          <span className="px-3 text-xs font-semibold text-zinc-500 border-r border-zinc-800/80 h-10 flex items-center bg-zinc-900/40">
             {prefix}
           </span>
         )}
@@ -221,21 +221,42 @@ function NumInput({ label, hint, emoji, value, onChange, prefix = "R$", suffix =
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder={placeholder}
-          style={{
-            flex: 1,
-            padding: "12px 14px",
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            fontSize: "1rem",
-            fontFamily: "monospace",
-            fontWeight: 700,
-            color: C.text,
-            minWidth: 0
-          }}
+          className="flex-1 px-3 py-2 bg-transparent border-none outline-none text-sm font-mono font-bold text-zinc-100 min-w-0"
         />
-        {suffix && <span style={{ padding: "0 12px", fontSize: "0.78rem", color: C.textMuted }}>{suffix}</span>}
+        {suffix && (
+          <span className="px-3 text-xs font-semibold text-zinc-500">
+            {suffix}
+          </span>
+        )}
       </div>
+
+      {min !== undefined && max !== undefined && (
+        <div className="mt-2.5 space-y-1.5">
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={Number(value) || 0}
+            onChange={e => onChange(e.target.value)}
+            className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 transition-all duration-300"
+          />
+          {benchmarks && benchmarks.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-1">
+              {benchmarks.map(b => (
+                <button
+                  key={b.label}
+                  type="button"
+                  onClick={() => onChange(b.value.toString())}
+                  className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30 hover:border-emerald-500/50 transition-all duration-300"
+                >
+                  {b.label}: {b.value}%
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -278,8 +299,9 @@ function InvSelect({ value, onChange }: InvSelectProps) {
       width: Math.max(rect.width, 300),
       maxHeight: dropH,
       overflowY: "auto",
-      background: C.surface,
-      border: `1.5px solid ${C.borderLt}`,
+      background: "#09090b", // bg-zinc-950
+      backdropFilter: "blur(12px)",
+      border: "1px solid rgba(63, 63, 70, 0.8)", // border-zinc-800/80
       borderRadius: 12,
       boxShadow: "0 20px 60px rgba(0,0,0,0.75)",
       zIndex: 99999,
@@ -287,8 +309,8 @@ function InvSelect({ value, onChange }: InvSelectProps) {
   };
 
   return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ fontSize: "0.68rem", fontWeight: 700, color: C.textMuted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
+    <div className="mb-4">
+      <div className="text-[10px] font-bold text-zinc-500 tracking-wider uppercase mb-1.5">
         Investimento de Referência
       </div>
 
@@ -296,32 +318,22 @@ function InvSelect({ value, onChange }: InvSelectProps) {
         ref={btnRef}
         type="button"
         onClick={handleToggle}
-        style={{
-          width: "100%",
-          padding: "11px 14px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: C.surfaceEl,
-          border: `1.5px solid ${open ? inv.cor + "80" : C.border}`,
-          borderRadius: 10,
-          cursor: "pointer",
-          transition: "border-color 0.15s",
-        }}
+        className="w-full px-3.5 py-2.5 flex items-center justify-between bg-zinc-950/60 border rounded-xl cursor-pointer transition-all duration-300 border-zinc-800/80 hover:border-zinc-700 hover:shadow-[0_0_12px_rgba(16,185,129,0.05)]"
+        style={open ? { borderColor: `${inv.cor}80`, boxShadow: `0 0 12px ${inv.cor}20` } : {}}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div style={{ width: 9, height: 9, borderRadius: "50%", background: inv.cor, boxShadow: `0 0 6px ${inv.cor}`, flexShrink: 0 }} />
-          <span style={{ fontWeight: 700, fontSize: "0.88rem", color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div className="flex items-center gap-2.5 min-width-0">
+          <div className="width-2 height-2 rounded-full flex-shrink-0" style={{ width: 8, height: 8, background: inv.cor, boxShadow: `0 0 6px ${inv.cor}` }} />
+          <span className="font-bold text-sm text-zinc-100 overflow-hidden text-ellipsis whitespace-nowrap">
             {inv.nome}
           </span>
           <Badge cor={RCOLORS[inv.risco]}>{RLABELS[inv.risco]}</Badge>
-          {!inv.ir && <Badge cor={C.green}>Isento IR</Badge>}
+          {!inv.ir && <Badge cor="#10B981">Isento IR</Badge>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 8 }}>
-          <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: inv.cor, fontWeight: 700 }}>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          <span className="font-mono text-xs font-bold" style={{ color: inv.cor }}>
             {formatPercentage(inv.taxaAnualPadrao, 2)} a.a.
           </span>
-          {open ? <ChevronUp size={13} color={C.textMuted} /> : <ChevronDown size={13} color={C.textMuted} />}
+          {open ? <ChevronUp size={13} className="text-zinc-500" /> : <ChevronDown size={13} className="text-zinc-500" />}
         </div>
       </button>
 
@@ -332,32 +344,23 @@ function InvSelect({ value, onChange }: InvSelectProps) {
               key={i.id}
               type="button"
               onClick={() => { onChange(i); setOpen(false); }}
+              className="w-full px-3.5 py-2.5 flex items-start gap-2.5 border-b border-zinc-800/80 cursor-pointer text-left transition-all duration-300 last:border-b-0"
               style={{
-                width: "100%",
-                padding: "11px 14px",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
                 background: i.id === value ? `${i.cor}12` : "transparent",
-                border: "none",
-                borderBottom: `1px solid ${C.border}`,
-                cursor: "pointer",
-                textAlign: "left",
-                transition: "background 0.1s",
               }}
               onMouseEnter={e => e.currentTarget.style.background = `${i.cor}18`}
               onMouseLeave={e => e.currentTarget.style.background = i.id === value ? `${i.cor}12` : "transparent"}
             >
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: i.cor, flexShrink: 0, marginTop: 4 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
-                  <span style={{ fontWeight: 700, fontSize: "0.82rem", color: C.text }}>{i.nome}</span>
+              <div className="width-2 height-2 rounded-full flex-shrink-0 mt-1" style={{ width: 8, height: 8, background: i.cor }} />
+              <div className="flex-1 min-width-0">
+                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                  <span className="font-bold text-xs text-zinc-100">{i.nome}</span>
                   <Badge cor={RCOLORS[i.risco]}>{RLABELS[i.risco]}</Badge>
-                  {!i.ir && <Badge cor={C.green}>Isento IR</Badge>}
+                  {!i.ir && <Badge cor="#10B981">Isento IR</Badge>}
                 </div>
-                <div style={{ fontSize: "0.7rem", color: C.textMuted }}>{i.desc}</div>
+                <div className="text-[10px] text-zinc-500 leading-tight">{i.desc}</div>
               </div>
-              <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: i.cor, fontWeight: 700, flexShrink: 0, marginLeft: 6 }}>
+              <span className="font-mono text-xs font-bold flex-shrink-0 ml-2" style={{ color: i.cor }}>
                 {formatPercentage(i.taxaAnualPadrao, 2)}
               </span>
             </button>
@@ -372,73 +375,79 @@ function InvSelect({ value, onChange }: InvSelectProps) {
 // GRÁFICO PRINCIPAL
 // ─────────────────────────────────────────────────────────
 interface MainChartProps {
-  tabela: SnapshotMensal[];
+  chartData: ChartPoint[];
   viradaMes: number | null;
   dobrouMes: number | null;
 }
-function MainChart({ tabela, viradaMes, dobrouMes }: MainChartProps) {
-  const step = Math.max(1, Math.floor(tabela.length / 72));
+function MainChart({ chartData, viradaMes, dobrouMes }: MainChartProps) {
+  const step = Math.max(1, Math.floor(chartData.length / 72));
   const data = useMemo(() => {
-    return tabela.map((snapshot) => ({
-      ...snapshot,
-      label: snapshot.mes % 12 === 0 ? (snapshot.mes === 0 ? "Hoje" : `Ano ${snapshot.mes / 12}`) : ""
-    })).filter((_, i) => i % step === 0 || i === tabela.length - 1);
-  }, [tabela, step]);
+    return chartData.map((point) => ({
+      ...point,
+      label: point.mes % 12 === 0 ? (point.mes === 0 ? "Hoje" : `Ano ${point.mes / 12}`) : ""
+    })).filter((_, i) => i % step === 0 || i === chartData.length - 1);
+  }, [chartData, step]);
 
   const dobrouPt = useMemo(() => {
     if (dobrouMes === null) return null;
-    const snap = tabela[Math.min(dobrouMes, tabela.length - 1)];
+    const snap = chartData[Math.min(dobrouMes, chartData.length - 1)];
     return {
       label: snap.mes % 12 === 0 ? (snap.mes === 0 ? "Hoje" : `Ano ${snap.mes / 12}`) : "",
-      total: snap.total
+      total: snap["Patrimônio Nominal"]
     };
-  }, [dobrouMes, tabela]);
+  }, [dobrouMes, chartData]);
 
   const viradaPt = useMemo(() => {
     if (viradaMes === null) return null;
-    const snap = tabela[Math.min(viradaMes, tabela.length - 1)];
+    const snap = chartData[Math.min(viradaMes, chartData.length - 1)];
     return snap.mes % 12 === 0 ? (snap.mes === 0 ? "Hoje" : `Ano ${snap.mes / 12}`) : `Mês ${snap.mes}`;
-  }, [viradaMes, tabela]);
+  }, [viradaMes, chartData]);
 
   const Tip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
-    const cap = payload.find((p: any) => p.dataKey === "capital");
-    const tot = payload.find((p: any) => p.dataKey === "total");
+    const nominal = payload.find((p: any) => p.dataKey === "Patrimônio Nominal");
+    const real = payload.find((p: any) => p.dataKey === "Patrimônio Real descontado a Inflação");
     const dataItem = payload[0]?.payload;
+    const cap = dataItem?.capital;
+    
     return (
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
-        <div style={{ fontSize: "0.7rem", color: C.textMuted, marginBottom: 8 }}>{dataItem?.label || `Mês ${dataItem?.mes}`}</div>
-        <div style={{ fontSize: "0.8rem", marginBottom: 3, display: "flex", justifyContent: "space-between", gap: 14 }}>
-          <span style={{ color: C.blue }}>Capital</span>
-          <strong style={{ color: C.text, fontFamily: "monospace" }}>{formatCurrency(cap?.value)}</strong>
+      <div className="bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-xl p-4 shadow-xl text-left">
+        <div className="text-[10px] text-zinc-500 font-bold uppercase mb-2 tracking-wider">{dataItem?.label || `Mês ${dataItem?.mes}`}</div>
+        <div className="text-xs mb-1.5 flex justify-between gap-6">
+          <span className="text-zinc-400">Capital Investido</span>
+          <strong className="text-zinc-100 font-mono">{formatCurrency(cap)}</strong>
         </div>
-        <div style={{ fontSize: "0.8rem", marginBottom: 3, display: "flex", justifyContent: "space-between", gap: 14 }}>
-          <span style={{ color: C.green }}>Juros</span>
-          <strong style={{ color: C.text, fontFamily: "monospace" }}>{formatCurrency((tot?.value || 0) - (cap?.value || 0))}</strong>
+        <div className="text-xs mb-1.5 flex justify-between gap-6">
+          <span className="text-zinc-400">Rendimento Nominal</span>
+          <strong className="text-emerald-400 font-mono">{formatCurrency(nominal?.value)}</strong>
         </div>
-        <div style={{ fontSize: "0.88rem", fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 14, borderTop: `1px solid ${C.border}`, paddingTop: 6, marginTop: 4 }}>
-          <span style={{ color: C.textSoft }}>Total</span>
-          <strong style={{ color: C.green, fontFamily: "monospace" }}>{formatCurrency(tot?.value)}</strong>
+        <div className="text-xs mb-1.5 flex justify-between gap-6">
+          <span className="text-zinc-400">Rendimento Real (IPCA)</span>
+          <strong className="text-amber-500 font-mono">{formatCurrency(real?.value)}</strong>
+        </div>
+        <div className="text-xs font-bold flex justify-between gap-6 border-t border-zinc-800/80 pt-2 mt-2">
+          <span className="text-zinc-200">Total Nominal</span>
+          <strong className="text-emerald-400 font-mono">{formatCurrency(nominal?.value)}</strong>
         </div>
       </div>
     );
   };
 
   return (
-    <div style={{ width: "100%", height: 260 }}>
+    <div className="w-full h-[260px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 18, right: 8, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={C.blue} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={C.blue} stopOpacity={0.03} />
+            <linearGradient id="gNominal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="gJ" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={C.green} stopOpacity={0.35} />
-              <stop offset="95%" stopColor={C.green} stopOpacity={0.04} />
+            <linearGradient id="gReal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#047857" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="#047857" stopOpacity={0.0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: C.textMuted }} tickLine={false} interval="preserveStartEnd" />
           <YAxis
             tick={{ fontSize: 10, fill: C.textMuted }}
@@ -448,8 +457,8 @@ function MainChart({ tabela, viradaMes, dobrouMes }: MainChartProps) {
           />
           <Tooltip content={<Tip />} />
           {dobrouPt && dobrouPt.label && (
-            <ReferenceDot x={dobrouPt.label} y={dobrouPt.total} r={7} fill={C.green} stroke={C.bg} strokeWidth={2}>
-              <Label value="Dobrou!" position="top" fontSize={10} fill={C.green} fontWeight={700} />
+            <ReferenceDot x={dobrouPt.label} y={dobrouPt.total} r={7} fill="#10b981" stroke="#09090b" strokeWidth={2}>
+              <Label value="Dobrou!" position="top" fontSize={10} fill="#10b981" fontWeight={700} />
             </ReferenceDot>
           )}
           {viradaPt && (
@@ -457,8 +466,23 @@ function MainChart({ tabela, viradaMes, dobrouMes }: MainChartProps) {
               <Label value="Ponto Zero" position="insideTopRight" fontSize={10} fill={C.amber} fontWeight={700} />
             </ReferenceLine>
           )}
-          <Area type="monotone" dataKey="capital" stroke={C.blue} fill="url(#gC)" strokeWidth={2} dot={false} />
-          <Area type="monotone" dataKey="total" stroke={C.green} fill="url(#gJ)" strokeWidth={2.5} dot={false} />
+          <Area
+            type="monotone"
+            dataKey="Patrimônio Real descontado a Inflação"
+            stroke="#047857"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            fill="url(#gReal)"
+            dot={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="Patrimônio Nominal"
+            stroke="#10b981"
+            strokeWidth={2}
+            fill="url(#gNominal)"
+            dot={false}
+          />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -481,56 +505,50 @@ function ResultCards({ patrimonioLiquido, patrimonioReal, totalInvestido, totalJ
   const mult = valorInicial > 0 ? (patrimonioLiquido / valorInicial).toFixed(1) : "—";
   
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div className="space-y-4 mb-5">
       {/* Patrimônio Nominal */}
-      <div style={{
-        background: `linear-gradient(135deg,${C.surface},${C.surfaceEl})`,
-        border: `1px solid ${C.green}40`,
-        borderRadius: 16,
-        padding: "24px",
-        marginBottom: 12,
-        boxShadow: `0 0 40px ${C.greenGlow}`
-      }}>
-        <div style={{ fontSize: "0.65rem", color: C.textMuted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>
+      <div className="bg-gradient-to-br from-zinc-900/60 to-zinc-900/40 backdrop-blur-md border border-emerald-800/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(16,185,129,0.15)] text-left transition-all duration-300 hover:shadow-[0_0_40px_rgba(16,185,129,0.25)] hover:border-emerald-500/50">
+        <div className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase mb-1.5">
           Patrimônio Nominal Final em {anos} {anos === 1 ? "ano" : "anos"}
         </div>
-        <div style={{ fontFamily: "monospace", fontSize: "clamp(2rem,6vw,2.8rem)", fontWeight: 800, color: C.green, lineHeight: 1, marginBottom: 8 }}>
+        <div className="font-mono text-3xl md:text-5xl font-black text-emerald-400 leading-none mb-2">
           {formatCurrency(patrimonioLiquido)}
         </div>
-        <div style={{ fontSize: "0.8rem", color: C.textSoft }}>
-          {mult}× seu capital inicial · {pctJuros}% desse valor vem puramente dos juros compostos!
+        <div className="text-xs text-zinc-400">
+          {mult}× seu capital inicial · <span className="text-emerald-400 font-semibold">{pctJuros}%</span> desse valor vem puramente dos juros compostos!
         </div>
       </div>
 
       {/* Patrimônio Real vs Investido */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-        <div style={{ background: C.surface, border: `1px solid ${C.blue}30`, borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ fontSize: "0.62rem", color: C.textMuted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-xl p-4 transition-all duration-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] hover:border-emerald-500/30">
+          <div className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase mb-1">
             Capital Investido
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: C.blue }}>
+          <div className="font-mono text-lg font-bold text-zinc-100">
             {formatCurrency(totalInvestido)}
           </div>
-          <div style={{ fontSize: "0.68rem", color: C.textMuted, marginTop: 2 }}>Seu esforço acumulado</div>
+          <div className="text-[10px] text-zinc-400 mt-0.5">Seu esforço acumulado</div>
         </div>
-        <div style={{ background: C.surface, border: `1px solid ${C.amber}30`, borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ fontSize: "0.62rem", color: C.textMuted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>
+        
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-xl p-4 transition-all duration-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)] hover:border-emerald-500/30">
+          <div className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase mb-1">
             Poder de Compra Real
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "1.2rem", fontWeight: 700, color: C.amber }}>
+          <div className="font-mono text-lg font-bold text-amber-500">
             {formatCurrency(patrimonioReal)}
           </div>
-          <div style={{ fontSize: "0.68rem", color: C.textMuted, marginTop: 2 }}>Descontado a inflação</div>
+          <div className="text-[10px] text-zinc-400 mt-0.5">Descontado a inflação</div>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <div style={{ background: C.greenDim, border: `1px solid ${C.green}30`, borderRadius: 999, padding: "5px 12px", fontSize: "0.72rem", color: C.green, fontWeight: 600 }}>
+      <div className="flex flex-wrap gap-2">
+        <span className="bg-emerald-950/40 border border-emerald-800/30 rounded-full px-3 py-1 text-xs text-emerald-400 font-semibold transition-all duration-300 hover:border-emerald-500/50">
           Rendimento Nominal: +{pctJuros}% em Juros
-        </div>
-        <div style={{ background: C.blueDim, border: `1px solid ${C.blue}30`, borderRadius: 999, padding: "5px 12px", fontSize: "0.72rem", color: C.blue, fontWeight: 600 }}>
+        </span>
+        <span className="bg-zinc-900/60 border border-zinc-800/80 rounded-full px-3 py-1 text-xs text-zinc-300 font-semibold transition-all duration-300 hover:border-zinc-500/50">
           Resgate em {anos * 12} meses
-        </div>
+        </span>
       </div>
     </div>
   );
@@ -573,26 +591,42 @@ function ProcrastCard({ valorInicial, aporteMensal, taxaAnual, inflacaoAnual, an
   const dia = Math.round(custo / (5 * 365));
   
   return (
-    <div style={{ background: C.surface, border: `1px solid ${show ? C.amber + "60" : C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 16, transition: "border-color 0.2s" }}>
-      <button type="button" onClick={onToggle} style={{ width: "100%", padding: "13px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <AlertTriangle size={16} color={C.amber} />
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: C.amber }}>E se eu tivesse começado há 5 anos?</div>
-            <div style={{ fontSize: "0.68rem", color: C.textMuted }}>O Custo da Espera / Procrastinação</div>
+    <div className={`bg-zinc-900/40 backdrop-blur-md border rounded-2xl overflow-hidden mb-4 transition-all duration-300 ${
+      show
+        ? "border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+        : "border-zinc-800/80 hover:border-zinc-700 hover:shadow-[0_0_15px_rgba(16,185,129,0.05)]"
+    }`}>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full px-5 py-4 flex items-center justify-between bg-transparent border-none cursor-pointer"
+      >
+        <div className="flex items-center gap-3">
+          <AlertTriangle size={18} className="text-amber-500 animate-pulse" />
+          <div className="text-left">
+            <div className="text-sm font-bold text-amber-500">E se eu tivesse começado há 5 anos?</div>
+            <div className="text-[10px] text-zinc-500 tracking-wider uppercase font-semibold">O Custo da Espera / Procrastinação</div>
           </div>
         </div>
-        <div style={{ width: 40, height: 22, borderRadius: 999, background: show ? C.amber : C.border, position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-          <div style={{ position: "absolute", top: 3, left: show ? 21 : 3, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+        
+        <div className={`w-10 h-5.5 rounded-full relative transition-all duration-300 flex items-center px-0.5 cursor-pointer ${
+          show ? "bg-amber-500" : "bg-zinc-850"
+        }`}>
+          <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 shadow ${
+            show ? "translate-x-4.5" : "translate-x-0"
+          }`} />
         </div>
       </button>
+      
       {show && (
-        <div style={{ borderTop: `1px solid ${C.amber}25`, padding: "18px 20px", background: `${C.amber}06` }}>
-          <div style={{ fontFamily: "monospace", fontSize: "1.8rem", fontWeight: 800, color: C.amber, marginBottom: 6 }}>{formatCurrency(custo)}</div>
-          <div style={{ fontSize: "0.8rem", color: C.textSoft, lineHeight: 1.65, marginBottom: 12 }}>
-            Este é o valor aproximado que você deixou de ganhar por não ter começado a investir <strong style={{ color: C.text }}>5 anos atrás</strong>, mesmo fazendo os mesmos aportes depois.
+        <div className="border-t border-amber-500/20 px-5 py-4 bg-amber-500/5 text-left transition-all duration-300">
+          <div className="font-mono text-2xl font-black text-amber-500 mb-1.5">
+            {formatCurrency(custo)}
           </div>
-          <div style={{ background: `${C.amber}12`, border: `1px solid ${C.amber}30`, borderRadius: 8, padding: "8px 14px", fontSize: "0.78rem", color: C.amber, fontWeight: 600 }}>
+          <div className="text-xs text-zinc-400 leading-relaxed mb-3">
+            Este é o valor aproximado que você deixou de ganhar por não ter começado a investir <strong className="text-zinc-200">5 anos atrás</strong>, mesmo fazendo os mesmos aportes depois.
+          </div>
+          <div className="bg-amber-950/30 border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-amber-500 font-semibold inline-block">
             ≈ {formatCurrency(dia)} perdidos por cada dia de atraso!
           </div>
         </div>
@@ -631,65 +665,60 @@ function HP12CMode() {
   };
 
   const getBtnCor = (key: HpKey) => {
-    if (shiftF) return key.main === "f" ? "#F59E0B" : C.borderLt;
-    if (shiftG) return key.main === "g" ? "#10B981" : C.borderLt;
+    if (shiftF) return key.main === "f" ? "#F59E0B" : "rgba(63, 63, 70, 0.4)";
+    if (shiftG) return key.main === "g" ? "#10B981" : "rgba(63, 63, 70, 0.4)";
     if (key.main === "f") return "#92400E";
     if (key.main === "g") return "#065F46";
     if (["PV", "PMT", "FV", "n", "i"].includes(key.main)) return "#1a3a6e";
     if (["+", "−", "×", "÷"].includes(key.main)) return "#3d2200";
     if (key.main === "ENTER") return "#1a2d4a";
-    return "#1E2D45";
+    return "rgba(63, 63, 70, 0.2)";
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: C.text, marginBottom: 4 }}>HP-12C — Modo Educativo Integrado</h2>
-        <p style={{ fontSize: "0.8rem", color: C.textSoft, lineHeight: 1.6 }}>
+    <div className="text-left">
+      <div className="mb-5">
+        <h2 className="text-lg font-bold text-white mb-1">HP-12C — Modo Educativo Integrado</h2>
+        <p className="text-xs text-zinc-400 leading-relaxed">
           Explore e entenda o funcionamento da lendária calculadora do mercado financeiro. Clique em qualquer tecla para ver a explicação de sua função.
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-5 mb-6">
         {/* CALCULADORA */}
-        <div style={{ background: "#1a1a2e", border: `2px solid ${C.border}`, borderRadius: 16, padding: 16, width: 260, flexShrink: 0 }}>
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-4.5 w-[260px] mx-auto md:mx-0 flex-shrink-0 shadow-lg hover:border-emerald-800/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)] transition-all duration-300">
           {/* Display */}
-          <div style={{ background: "#0a1a0a", border: `1px solid #1a3a1a`, borderRadius: 8, padding: "12px 16px", marginBottom: 12 }}>
-            <div style={{ fontSize: "0.55rem", color: "#4a5568", letterSpacing: "0.1em", marginBottom: 4, display: "flex", gap: 12 }}>
-              {shiftF && <span style={{ color: C.amber, fontWeight: 700 }}>● f</span>}
-              {shiftG && <span style={{ color: C.green, fontWeight: 700 }}>● g</span>}
+          <div className="bg-[#0b1c0b] border border-[#1a3a1a] rounded-xl p-3 mb-3">
+            <div className="text-[9px] text-[#4a5f4a] font-bold tracking-widest mb-1 flex gap-3">
+              {shiftF && <span className="text-amber-500">● f</span>}
+              {shiftG && <span className="text-emerald-400">● g</span>}
               {!shiftF && !shiftG && <span>RPN STACK REG</span>}
             </div>
-            <div style={{ fontFamily: "'Courier New',monospace", fontSize: "1.6rem", fontWeight: 700, color: "#00ff88", textAlign: "right", letterSpacing: "0.05em" }}>
+            <div className="font-mono text-2xl font-bold text-[#00ff88] text-right tracking-wide">
               {display}
             </div>
           </div>
 
           {/* Teclas em grid 5 colunas */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 5 }}>
+          <div className="grid grid-cols-5 gap-1.5">
             {HP_KEYS.map((key, idx) => {
               const isSelected = selectedKey?.main === key.main;
               const bg = getBtnCor(key);
               return (
-                <button key={idx} type="button" onClick={() => handleKey(key)} style={{
-                  background: isSelected ? `${C.green}30` : bg,
-                  border: `1px solid ${isSelected ? C.green : C.border}`,
-                  borderRadius: 6,
-                  padding: "6px 4px",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 1,
-                  transition: "all 0.1s",
-                  boxShadow: isSelected ? `0 0 8px ${C.green}50` : "none",
-                }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = C.green}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = isSelected ? C.green : C.border}
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleKey(key)}
+                  className="border rounded-lg py-1.5 px-0.5 cursor-pointer flex flex-col items-center gap-0.5 transition-all duration-300 hover:border-emerald-500"
+                  style={{
+                    backgroundColor: isSelected ? "rgba(16, 185, 129, 0.15)" : bg,
+                    borderColor: isSelected ? "#10B981" : "rgba(63, 63, 70, 0.4)",
+                    boxShadow: isSelected ? "0 0 10px rgba(16, 185, 129, 0.25)" : "none",
+                  }}
                 >
-                  {key.f && <span style={{ fontSize: "0.42rem", color: shiftF ? "#F59E0B" : "#6b7280", fontWeight: 600, lineHeight: 1 }}>{key.f}</span>}
-                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: C.text, lineHeight: 1 }}>{getBtnLabel(key)}</span>
-                  {key.g && <span style={{ fontSize: "0.42rem", color: shiftG ? "#10B981" : "#6b7280", fontWeight: 600, lineHeight: 1 }}>{key.g}</span>}
+                  {key.f && <span className={`text-[7px] font-bold leading-none ${shiftF ? "text-amber-500" : "text-zinc-500"}`}>{key.f}</span>}
+                  <span className="text-[10px] font-extrabold text-zinc-100 leading-none">{getBtnLabel(key)}</span>
+                  {key.g && <span className={`text-[7px] font-bold leading-none ${shiftG ? "text-emerald-400" : "text-zinc-500"}`}>{key.g}</span>}
                 </button>
               );
             })}
@@ -697,62 +726,71 @@ function HP12CMode() {
         </div>
 
         {/* PAINEL EXPLICATIVO */}
-        <div>
+        <div className="space-y-3.5">
           {selectedKey ? (
-            <div style={{ background: C.surfaceEl, border: `1px solid ${C.green}30`, borderRadius: 14, padding: "18px 20px", animation: "fadeUp 0.2s ease" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <div style={{ background: C.greenDim, border: `1px solid ${C.green}30`, borderRadius: 8, padding: "4px 12px", fontFamily: "monospace", fontSize: "1rem", fontWeight: 800, color: C.green }}>
+            <div className="bg-zinc-900/40 backdrop-blur-md border border-emerald-500/20 rounded-2xl p-5 animate-[fadeUp_0.2s_ease-out] text-left">
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className="bg-emerald-950/40 border border-emerald-800/30 rounded-lg px-3 py-1 font-mono text-sm font-black text-emerald-400">
                   {selectedKey.main}
                 </div>
-                {selectedKey.f && <Badge cor={C.amber}>{selectedKey.f}</Badge>}
-                {selectedKey.g && <Badge cor={C.green}>{selectedKey.g}</Badge>}
+                {selectedKey.f && <Badge cor="#F59E0B">{selectedKey.f}</Badge>}
+                {selectedKey.g && <Badge cor="#10B981">{selectedKey.g}</Badge>}
               </div>
-              <p style={{ fontSize: "0.85rem", color: C.text, lineHeight: 1.7 }}>{selectedKey.explicacao}</p>
+              <p className="text-xs text-zinc-300 leading-relaxed">{selectedKey.explicacao}</p>
             </div>
           ) : (
-            <div style={{ background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-              <ChevronRight size={20} color={C.amber} />
+            <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-5 flex items-center gap-3">
+              <ChevronRight size={18} className="text-amber-500" />
               <div>
-                <div style={{ fontWeight: 700, fontSize: "0.88rem", color: C.amber, marginBottom: 4 }}>Clique em qualquer tecla</div>
-                <div style={{ fontSize: "0.78rem", color: C.textSoft, lineHeight: 1.5 }}>
+                <div className="font-bold text-xs text-amber-500 mb-0.5">Clique em qualquer tecla</div>
+                <div className="text-[11px] text-zinc-400 leading-relaxed">
                   Entenda a lógica de funcionamento e os cálculos por trás de cada botão.
                 </div>
               </div>
             </div>
           )}
 
-          <div style={{ marginTop: 12, background: `${C.amber}08`, border: `1px solid ${C.amber}25`, borderRadius: 10, padding: "12px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              <Lightbulb size={13} color={C.amber} />
-              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: C.amber, letterSpacing: "0.06em", textTransform: "uppercase" }}>Lógica RPN</span>
+          <div className="bg-amber-950/10 border border-amber-900/25 rounded-2xl p-4.5">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Lightbulb size={13} className="text-amber-500" />
+              <span className="text-[9px] font-bold text-amber-500 tracking-wider uppercase">Lógica RPN</span>
             </div>
-            <div style={{ fontSize: "0.75rem", color: C.textSoft, lineHeight: 1.6 }}>
-              A HP-12C usa **Notação Polonesa Reversa (RPN)**. Você insere os números primeiro e depois as operações.
-              Ex: Para fazer 5 + 3, tecle: <code style={{ background: C.surface, padding: "1px 5px", borderRadius: 4, color: C.green }}>5 ENTER 3 +</code>.
+            <div className="text-xs text-zinc-400 leading-relaxed">
+              A HP-12C usa <strong className="text-zinc-300">Notação Polonesa Reversa (RPN)</strong>. Você insere os números primeiro e depois as operações.
+              Ex: Para fazer 5 + 3, tecle: <code className="bg-zinc-950 px-1.5 py-0.5 rounded font-mono text-emerald-400 text-[11px]">5 ENTER 3 +</code>.
             </div>
           </div>
         </div>
       </div>
 
       <div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: C.textSoft, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>
+        <div className="text-[10px] font-bold text-zinc-500 tracking-wider uppercase mb-3">
           Exemplos Clássicos Passo a Passo
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="flex flex-col gap-2.5">
           {HP_EXEMPLOS.map((ex, i) => (
-            <div key={i} style={{ background: C.surface, border: `1px solid ${activeExemplo === i ? C.green + "50" : C.border}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.2s" }}>
-              <button type="button" onClick={() => setEx(activeExemplo === i ? null : i)} style={{ width: "100%", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "transparent", border: "none", cursor: "pointer" }}>
-                <span style={{ fontWeight: 600, fontSize: "0.85rem", color: C.text }}>{ex.titulo}</span>
-                {activeExemplo === i ? <ChevronUp size={15} color={C.textMuted} /> : <ChevronDown size={15} color={C.textMuted} />}
+            <div
+              key={i}
+              className={`bg-zinc-900/40 backdrop-blur-md border rounded-xl overflow-hidden transition-all duration-300 ${
+                activeExemplo === i ? "border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.05)]" : "border-zinc-800/80 hover:border-zinc-700"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setEx(activeExemplo === i ? null : i)}
+                className="w-full px-4.5 py-3.5 flex justify-between items-center bg-transparent border-none cursor-pointer"
+              >
+                <span className="font-bold text-xs text-zinc-200">{ex.titulo}</span>
+                {activeExemplo === i ? <ChevronUp size={14} className="text-zinc-500" /> : <ChevronDown size={14} className="text-zinc-500" />}
               </button>
               {activeExemplo === i && (
-                <div style={{ borderTop: `1px solid ${C.border}`, padding: "14px 18px" }}>
+                <div className="border-t border-zinc-800/80 px-4.5 py-3.5 bg-zinc-950/20">
                   {ex.passos.map((p, j) => (
-                    <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: C.greenDim, border: `1px solid ${C.green}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", fontWeight: 700, color: C.green, flexShrink: 0 }}>
+                    <div key={j} className="flex gap-2.5 items-start mb-2 last:mb-0">
+                      <div className="w-4.5 h-4.5 rounded-full bg-emerald-950/40 border border-emerald-800/30 flex items-center justify-center text-[9px] font-bold text-emerald-400 flex-shrink-0">
                         {j + 1}
                       </div>
-                      <code style={{ fontSize: "0.8rem", color: C.green, fontFamily: "monospace", lineHeight: 1.5 }}>{p}</code>
+                      <code className="text-xs text-emerald-400 font-mono leading-relaxed">{p}</code>
                     </div>
                   ))}
                 </div>
@@ -768,7 +806,7 @@ function HP12CMode() {
 // ─────────────────────────────────────────────────────────
 // CENÁRIOS
 // ─────────────────────────────────────────────────────────
-const SCEN_COLORS = [C.blue, C.green, C.amber];
+const SCEN_COLORS = ["#3B82F6", "#10B981", "#F59E0B"];
 const SCEN_NAMES = ["Cenário A", "Cenário B", "Cenário C"];
 
 interface ScenarioItem {
@@ -801,36 +839,99 @@ function ScenarioRow({ index, s, onChange, onRemove, canRemove }: ScenarioRowPro
   }, [s.pv, s.aporte, s.anos, inv.taxaAnualPadrao]);
 
   return (
-    <div style={{ background: C.surface, border: `1.5px solid ${cor}40`, borderRadius: 14, overflow: "hidden", marginBottom: 14, boxShadow: `0 4px 20px ${cor}15` }}>
-      <div style={{ padding: "12px 18px", background: `${cor}10`, borderBottom: `1px solid ${cor}25`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: cor, boxShadow: `0 0 6px ${cor}` }} />
-          <span style={{ fontWeight: 700, fontSize: "0.85rem", color: C.text }}>{SCEN_NAMES[index]}</span>
+    <div
+      className="bg-zinc-900/40 backdrop-blur-md rounded-2xl overflow-hidden mb-4 border transition-all duration-300 text-left"
+      style={{
+        borderColor: `${cor}30`,
+        boxShadow: `0 4px 20px ${cor}10`
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = `${cor}60`;
+        e.currentTarget.style.boxShadow = `0 8px 30px ${cor}20`;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = `${cor}30`;
+        e.currentTarget.style.boxShadow = `0 4px 20px ${cor}10`;
+      }}
+    >
+      <div
+        className="px-4.5 py-3 flex items-center justify-between border-b"
+        style={{
+          backgroundColor: `${cor}08`,
+          borderColor: `${cor}20`
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cor, boxShadow: `0 0 8px ${cor}` }} />
+          <span className="font-bold text-xs text-zinc-200">{SCEN_NAMES[index]}</span>
         </div>
         {canRemove && (
-          <button type="button" onClick={onRemove} style={{ background: "none", border: "none", cursor: "pointer", color: C.red, padding: 2 }}>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="bg-transparent border-none cursor-pointer text-red-500 hover:text-red-400 transition-colors p-0.5"
+          >
             <Trash2 size={14} />
           </button>
         )}
       </div>
 
-      <div style={{ padding: "16px 18px" }}>
+      <div className="p-4.5 space-y-4">
         <InvSelect value={s.invId} onChange={i => onChange({ ...s, invId: i.id })} />
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
-          <NumInput label="Capital Inicial" emoji="💰" hint="Investimento inicial" value={s.pv} onChange={v => onChange({ ...s, pv: v })} placeholder="5000" />
-          <NumInput label="Aporte Mensal" emoji="📅" hint="Investimento por mês" value={s.aporte} onChange={v => onChange({ ...s, aporte: v })} placeholder="300" />
-          <NumInput label="Prazo" emoji="⏳" hint="Período total" value={s.anos} onChange={v => onChange({ ...s, anos: v })} prefix="" suffix="anos" placeholder="10" />
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <NumInput
+            label="Capital Inicial"
+            emoji="💰"
+            hint="Investimento inicial"
+            value={s.pv}
+            onChange={v => onChange({ ...s, pv: v })}
+            placeholder="5000"
+            min={0}
+            max={100000}
+            step={1000}
+          />
+          <NumInput
+            label="Aporte Mensal"
+            emoji="📅"
+            hint="Investimento por mês"
+            value={s.aporte}
+            onChange={v => onChange({ ...s, aporte: v })}
+            placeholder="300"
+            min={0}
+            max={20000}
+            step={100}
+          />
+          <NumInput
+            label="Prazo"
+            emoji="⏳"
+            hint="Período total"
+            value={s.anos}
+            onChange={v => onChange({ ...s, anos: v })}
+            prefix=""
+            suffix="anos"
+            placeholder="10"
+            min={1}
+            max={40}
+            step={1}
+          />
         </div>
 
-        <div style={{ background: `${cor}08`, border: `1px solid ${cor}25`, borderRadius: 10, padding: "12px 16px", marginTop: 4 }}>
-          <div style={{ fontSize: "0.62rem", color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+        <div
+          className="border rounded-xl p-3.5 mt-1 text-left"
+          style={{
+            backgroundColor: `${cor}05`,
+            borderColor: `${cor}15`
+          }}
+        >
+          <div className="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase mb-1">
             Resultado Projetado ({parseBRL(s.anos) || 1} anos) · {inv.nome}
           </div>
-          <div style={{ fontFamily: "monospace", fontSize: "1.5rem", fontWeight: 800, color: cor }}>
+          <div className="font-mono text-xl font-extrabold" style={{ color: cor }}>
             {formatCurrency(r.patrimonioLiquido)}
           </div>
-          <div style={{ fontSize: "0.7rem", color: C.textMuted, marginTop: 3, display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <span>Total Investido: <strong style={{ color: C.textSoft }}>{formatCurrency(r.totalInvestido)}</strong></span>
+          <div className="text-[10px] text-zinc-400 mt-1.5 flex gap-4 flex-wrap">
+            <span>Total Investido: <strong className="text-zinc-300">{formatCurrency(r.totalInvestido)}</strong></span>
             <span>Juros Ganhos: <strong style={{ color: cor }}>{formatCurrency(r.totalJuros)}</strong></span>
           </div>
         </div>
@@ -876,11 +977,11 @@ function CompareChart({ scenarios }: CompareChartProps) {
   const Tip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
     return (
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px 14px", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+      <div className="bg-zinc-900 border border-zinc-800/80 rounded-xl p-3.5 shadow-xl text-left">
         {payload.map((p: any, i: number) => p.value != null && (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 14, fontSize: "0.8rem", marginBottom: 2 }}>
+          <div key={i} className="flex justify-between gap-6 text-xs mb-1.5 last:mb-0">
             <span style={{ color: SCEN_COLORS[i] }}>● {SCEN_NAMES[i]}</span>
-            <strong style={{ color: C.text, fontFamily: "monospace" }}>{formatCurrency(p.value)}</strong>
+            <strong className="text-zinc-100 font-mono">{formatCurrency(p.value)}</strong>
           </div>
         ))}
       </div>
@@ -888,7 +989,7 @@ function CompareChart({ scenarios }: CompareChartProps) {
   };
 
   return (
-    <div style={{ width: "100%", height: 240 }}>
+    <div className="w-full h-[240px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -899,7 +1000,7 @@ function CompareChart({ scenarios }: CompareChartProps) {
               </linearGradient>
             ))}
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: C.textMuted }} tickLine={false} interval="preserveStartEnd" />
           <YAxis
             tick={{ fontSize: 10, fill: C.textMuted }}
@@ -922,62 +1023,65 @@ function CompareChart({ scenarios }: CompareChartProps) {
 // ─────────────────────────────────────────────────────────
 function InvestTable() {
   return (
-    <div>
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: C.text, marginBottom: 4 }}>Matriz Geral de Investimentos</h2>
-        <p style={{ fontSize: "0.8rem", color: C.textSoft, lineHeight: 1.6 }}>
+    <div className="text-left">
+      <div className="mb-5">
+        <h2 className="text-lg font-bold text-white mb-1">Matriz Geral de Investimentos</h2>
+        <p className="text-xs text-zinc-400 leading-relaxed">
           Comparativo educacional simplificado baseado no mercado nacional. Sempre analise seu perfil antes de investir!
         </p>
       </div>
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
+      
+      <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl overflow-hidden mb-5 transition-all duration-300 hover:border-emerald-800/30">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-xs">
             <thead>
-              <tr style={{ background: C.surfaceEl, borderBottom: `1px solid ${C.border}` }}>
+              <tr className="bg-zinc-950/60 border-b border-zinc-800/80">
                 {["Investimento", "Risco", "Liquidez", "Taxa Ref.", "Prazo", "FGC", "IR"].map(h => (
-                  <th key={h} style={{ padding: "12px 14px", textAlign: "left", color: C.textMuted, fontWeight: 600, fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} className="px-3.5 py-3 text-left text-zinc-500 font-bold tracking-wider uppercase text-[10px] whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {INVESTIMENTOS.map((inv, i) => (
-                <tr key={inv.id} style={{ borderBottom: `1px solid ${C.border}`, background: i % 2 === 0 ? "transparent" : C.surfaceEl }}>
-                  <td style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: inv.cor, boxShadow: `0 0 5px ${inv.cor}`, flexShrink: 0 }} />
+                <tr key={inv.id} className={`border-b border-zinc-800/80 hover:bg-zinc-850/30 transition-all duration-300 last:border-b-0 ${i % 2 === 0 ? "bg-transparent" : "bg-zinc-950/20"}`}>
+                  <td className="px-3.5 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: inv.cor, boxShadow: `0 0 5px ${inv.cor}` }} />
                       <div>
-                        <div style={{ fontWeight: 700, color: C.text }}>{inv.nome}</div>
-                        <div style={{ fontSize: "0.67rem", color: C.textMuted, marginTop: 1 }}>{inv.desc}</div>
+                        <div className="font-bold text-zinc-200">{inv.nome}</div>
+                        <div className="text-[10px] text-zinc-500 mt-0.5 leading-tight">{inv.desc}</div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: "12px 14px" }}><Badge cor={RCOLORS[inv.risco]}>{RLABELS[inv.risco]}</Badge></td>
-                  <td style={{ padding: "12px 14px", color: C.textSoft, fontFamily: "monospace", fontSize: "0.77rem" }}>{inv.liquidez}</td>
-                  <td style={{ padding: "12px 14px", fontFamily: "monospace", fontWeight: 700, color: inv.cor }}>{formatPercentage(inv.taxaAnualPadrao, 2)} a.a.</td>
-                  <td style={{ padding: "12px 14px", color: C.textSoft, fontSize: "0.77rem" }}>{inv.prazo}</td>
-                  <td style={{ padding: "12px 14px", textAlign: "center" }}>{inv.fgc ? <CheckCircle size={14} color={C.green} style={{ display: "inline" }} /> : <span style={{ color: C.textMuted }}>—</span>}</td>
-                  <td style={{ padding: "12px 14px" }}>{inv.ir ? <span style={{ fontSize: "0.72rem", color: C.red, fontWeight: 600 }}>Sim (Regressivo)</span> : <Badge cor={C.green}>Isento</Badge>}</td>
+                  <td className="px-3.5 py-3"><Badge cor={RCOLORS[inv.risco]}>{RLABELS[inv.risco]}</Badge></td>
+                  <td className="px-3.5 py-3 text-zinc-400 font-mono text-[11px]">{inv.liquidez}</td>
+                  <td className="px-3.5 py-3 font-mono font-bold" style={{ color: inv.cor }}>{formatPercentage(inv.taxaAnualPadrao, 2)} a.a.</td>
+                  <td className="px-3.5 py-3 text-zinc-400 text-[11px]">{inv.prazo}</td>
+                  <td className="px-3.5 py-3 text-center">{inv.fgc ? <CheckCircle size={14} className="text-emerald-500 inline" /> : <span className="text-zinc-600">—</span>}</td>
+                  <td className="px-3.5 py-3">{inv.ir ? <span className="text-[10px] text-red-400 font-bold">Sim (Regressivo)</span> : <Badge cor="#10B981">Isento</Badge>}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: "Conservador", icon: Shield, cor: "#3B82F6", ativos: ["Poupança", "Tesouro Selic", "CDB"], desc: "Foco total na preservação do patrimônio e liquidez." },
           { label: "Moderado", icon: Target, cor: C.green, ativos: ["CDB", "LCI/LCA", "Multimercado"], desc: "Equilíbrio entre segurança e maior rentabilidade de médio prazo." },
           { label: "Arrojado", icon: TrendingUp, cor: C.amber, ativos: ["Multimercado", "FIIs", "Ações"], desc: "Horizonte de longo prazo visando à multiplicação patrimonial." },
         ].map(p => (
-          <div key={p.label} style={{ background: `${p.cor}08`, border: `1.5px solid ${p.cor}30`, borderRadius: 12, padding: "16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <p.icon size={15} color={p.cor} />
-              <span style={{ fontWeight: 700, fontSize: "0.88rem", color: C.text }}>{p.label}</span>
+          <div key={p.label} className="bg-zinc-900/20 border border-zinc-800/80 hover:border-emerald-800/30 rounded-xl p-4 transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.05)]">
+            <div className="flex items-center gap-2 mb-2">
+              <p.icon size={15} style={{ color: p.cor }} />
+              <span className="font-bold text-sm text-zinc-200">{p.label}</span>
             </div>
-            <p style={{ fontSize: "0.72rem", color: C.textSoft, lineHeight: 1.55, marginBottom: 10 }}>{p.desc}</p>
+            <p className="text-xs text-zinc-400 leading-relaxed mb-3.5">{p.desc}</p>
             {p.ativos.map(a => (
-              <div key={a} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.72rem", color: C.textSoft, marginBottom: 4 }}>
-                <div style={{ width: 5, height: 5, borderRadius: "50%", background: p.cor }} />{a}
+              <div key={a} className="flex items-center gap-1.5 text-xs text-zinc-400 mb-1 last:mb-0">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.cor }} />
+                {a}
               </div>
             ))}
           </div>
@@ -1008,6 +1112,7 @@ export function Simulator() {
     setTaxaAnual,
     setInflacaoAnual,
     outputs,
+    chartData,
     isLoading
   } = useSimulation();
 
@@ -1053,92 +1158,149 @@ export function Simulator() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "system-ui, -apple-system, sans-serif", color: C.text }}>
+    <div className="bg-zinc-950 min-h-screen text-zinc-100 font-sans">
       <style>{`
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         *{box-sizing:border-box;margin:0;padding:0}
         ::-webkit-scrollbar{width:4px;height:4px}
-        ::-webkit-scrollbar-track{background:${C.bg}}
-        ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px}
+        ::-webkit-scrollbar-track{background:#09090b}
+        ::-webkit-scrollbar-thumb{background:rgba(63,63,70,0.5);border-radius:2px}
         input[type=text]:focus,input[type=number]:focus{outline:none}
         button{font-family:inherit}
+        .animate-spin-slow { animation: spin 4s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
 
       {/* HEADER */}
-      <div style={{ background: `${C.surface}F5`, borderBottom: `1px solid ${C.border}`, backdropFilter: "blur(16px)", position: "sticky", top: 0, zIndex: 100, padding: "12px 20px" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: `linear-gradient(135deg,${C.green},${C.greenDark})`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 12px ${C.green}50` }}>
-              <span style={{ color: "#fff", fontWeight: 900, fontSize: "0.8rem", letterSpacing: "-0.02em" }}>P0</span>
+      <div className="bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-800/80 sticky top-0 z-50 py-3 px-5 transition-all duration-300">
+        <div className="max-w-[860px] mx-auto flex items-center justify-between flex-wrap gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8.5 h-8.5 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+              <span className="color-[#fff] font-black text-xs tracking-tighter">P0</span>
             </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: "1rem", letterSpacing: "-0.03em", color: C.text }}>Ponto Zero</div>
-              <div style={{ fontSize: "0.62rem", color: C.textMuted }}>Simulador Financeiro</div>
+            <div className="text-left">
+              <div className="font-extrabold text-sm tracking-tight text-white">Ponto Zero</div>
+              <div className="text-[9px] text-zinc-500">Simulador Financeiro</div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 4, background: C.surfaceEl, borderRadius: 999, padding: 4, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
+          <div className="flex gap-1 bg-zinc-900/60 rounded-full p-1 border border-zinc-800/60 flex-wrap">
             {TABS.map(t => (
-              <button key={t.id} type="button" onClick={() => { setTab(t.id); setResult(false); }} style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "7px 12px",
-                borderRadius: 999,
-                border: "none",
-                background: tab === t.id ? C.green : "transparent",
-                color: tab === t.id ? "#fff" : C.textMuted,
-                fontSize: "0.73rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s",
-                whiteSpace: "nowrap",
-              }}>
-                <t.icon size = {12} />{t.label}
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => { setTab(t.id); setResult(false); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                  tab === t.id
+                    ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.2)]"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                }`}
+              >
+                <t.icon size={12} />
+                {t.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 16px 80px" }}>
+      <div className="max-w-[860px] mx-auto px-4 py-7 pb-20">
 
         {/* ── ASSISTENTE ── */}
         {tab === "assistente" && (
           <>
             {!showResult ? (
-              <div style={{ animation: "fadeUp 0.35s ease" }}>
-                <div style={{ textAlign: "center", marginBottom: 32 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.greenDim, border: `1px solid ${C.green}40`, borderRadius: 999, padding: "5px 16px", marginBottom: 16 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, boxShadow: `0 0 6px ${C.green}` }} />
-                    <span style={{ fontSize: "0.7rem", fontWeight: 700, color: C.green, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              <div className="animate-[fadeUp_350ms_ease-out]">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-950/30 border border-emerald-800/30 rounded-full px-4 py-1.5 mb-4.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]" />
+                    <span className="text-[10px] font-bold text-emerald-400 tracking-wider uppercase">
                       {isLoading ? "Carregando Taxas..." : "Taxas Reais Ativas"}
                     </span>
                   </div>
-                  <h1 style={{ fontFamily: "Georgia,serif", fontSize: "clamp(1.8rem,5vw,2.6rem)", fontWeight: 800, color: C.text, lineHeight: 1.15, marginBottom: 10, letterSpacing: "-0.03em" }}>
-                    Entenda seu <br /><em style={{ color: C.green, fontStyle: "italic" }}>dinheiro</em>
+                  <h1 className="font-sans text-3xl md:text-5xl font-black text-white leading-tight mb-3.5 tracking-tight">
+                    Entenda seu <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500 font-extrabold italic">dinheiro</span>
                   </h1>
-                  <p style={{ fontSize: "0.88rem", color: C.textSoft, maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
+                  <p className="text-xs sm:text-sm text-zinc-400 max-w-[420px] mx-auto leading-relaxed">
                     Projete seu patrimônio usando o motor matemático com precisão monetária e taxas do Banco Central.
                   </p>
                 </div>
 
-                <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: "24px", marginBottom: 16 }}>
+                <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-6 mb-4 transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] hover:border-emerald-800/30">
                   <InvSelect value={invId} onChange={handleInvestmentChange} />
                   
-                  <NumInput label="Quanto você tem hoje?" emoji="💰" value={inputs.valorInicial} onChange={v => setValorInicial(parseBRL(v))} placeholder="5.000" />
+                  <NumInput
+                    label="Quanto você tem hoje?"
+                    emoji="💰"
+                    value={inputs.valorInicial}
+                    onChange={v => setValorInicial(parseBRL(v))}
+                    placeholder="5.000"
+                    min={0}
+                    max={250000}
+                    step={1000}
+                  />
                   
-                  <NumInput label="Quanto coloca por mês?" emoji="📅" value={inputs.aporteMensal} onChange={v => setAporteMensal(parseBRL(v))} placeholder="300" />
+                  <NumInput
+                    label="Quanto coloca por mês?"
+                    emoji="📅"
+                    value={inputs.aporteMensal}
+                    onChange={v => setAporteMensal(parseBRL(v))}
+                    placeholder="300"
+                    min={0}
+                    max={50000}
+                    step={100}
+                  />
                   
-                  <NumInput label="Por quanto tempo?" emoji="⏳" value={inputs.prazoAnos} onChange={v => setPrazoAnos(parseBRL(v))} prefix="" suffix="anos" placeholder="10" />
+                  <NumInput
+                    label="Por quanto tempo?"
+                    emoji="⏳"
+                    value={inputs.prazoAnos}
+                    onChange={v => setPrazoAnos(parseBRL(v))}
+                    prefix=""
+                    suffix="anos"
+                    placeholder="10"
+                    min={1}
+                    max={50}
+                    step={1}
+                  />
                   
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
-                    <NumInput label="Taxa de Rendimento Anual" emoji="📈" value={inputs.taxaAnual} onChange={v => setTaxaAnual(parseBRL(v))} prefix="" suffix="% a.a." placeholder="10.5" />
-                    <NumInput label="Estimativa de Inflação Anual" emoji="💸" value={inputs.inflacaoAnual} onChange={v => setInflacaoAnual(parseBRL(v))} prefix="" suffix="% a.a." placeholder="4.5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1.5">
+                    <NumInput
+                      label="Taxa de Rendimento Anual"
+                      emoji="📈"
+                      value={inputs.taxaAnual}
+                      onChange={v => setTaxaAnual(parseBRL(v))}
+                      prefix=""
+                      suffix="% a.a."
+                      placeholder="10.5"
+                      min={0}
+                      max={30}
+                      step={0.1}
+                      benchmarks={[
+                        { label: "Poupança", value: 6.17 },
+                        { label: "CDI", value: 10.50 }
+                      ]}
+                    />
+                    <NumInput
+                      label="Estimativa de Inflação Anual"
+                      emoji="💸"
+                      value={inputs.inflacaoAnual}
+                      onChange={v => setInflacaoAnual(parseBRL(v))}
+                      prefix=""
+                      suffix="% a.a."
+                      placeholder="4.5"
+                      min={0}
+                      max={20}
+                      step={0.1}
+                      benchmarks={[
+                        { label: "Meta IPCA", value: 3.00 },
+                        { label: "IPCA Atual", value: 4.50 }
+                      ]}
+                    />
                   </div>
 
-                  <div style={{ background: C.greenDim, border: `1px solid ${C.green}25`, borderRadius: 10, padding: "10px 16px", marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-                    <span style={{ fontSize: "0.78rem", color: C.textSoft }}>Prévia do resgate líquido:</span>
-                    <span style={{ fontFamily: "monospace", fontSize: "1.1rem", fontWeight: 800, color: C.green }}>{formatCurrency(outputs.patrimonioLiquido)}</span>
+                  <div className="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-3.5 mt-2 flex justify-between items-center flex-wrap gap-2">
+                    <span className="text-xs text-zinc-400 font-semibold">Prévia do resgate líquido:</span>
+                    <span className="font-mono text-base font-extrabold text-emerald-400">{formatCurrency(outputs.patrimonioLiquido)}</span>
                   </div>
                 </div>
 
@@ -1152,20 +1314,28 @@ export function Simulator() {
                   onToggle={() => setEspera(!showEspera)}
                 />
 
-                <div style={{ background: C.surfaceEl, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 20, fontFamily: "monospace" }}>
-                  <div style={{ fontSize: "0.62rem", color: C.textMuted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Fórmulas de Cálculo Decoupled</div>
-                  <div style={{ fontSize: "0.82rem", color: C.green, marginBottom: 4 }}>FV = PV × (1+i)ⁿ + PMT × [(1+i)ⁿ − 1] / i</div>
-                  <div style={{ fontSize: "0.7rem", color: C.textMuted }}>Modo Real Fisher: r_real = (nom - inf) / (1 + inf)</div>
+                <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-xl p-4 mb-5 font-mono text-left transition-all duration-300 hover:border-emerald-500/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                  <div className="text-[9px] text-zinc-400 font-bold tracking-widest uppercase mb-1.5">Fórmulas de Cálculo Decoupled</div>
+                  <div className="text-xs text-emerald-400 font-semibold mb-1">FV = PV × (1+i)ⁿ + PMT × [(1+i)ⁿ − 1] / i</div>
+                  <div className="text-[10px] text-zinc-400">Modo Real Fisher: r_real = (nom - inf) / (1 + inf)</div>
                 </div>
 
-                <button type="button" onClick={() => setResult(true)} style={{ width: "100%", padding: "16px", background: `linear-gradient(135deg,#10B981,#059669)`, border: "none", borderRadius: 12, fontSize: "1rem", fontWeight: 700, color: "#fff", cursor: "pointer", boxShadow: `0 4px 24px ${C.green}40`, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setResult(true)}
+                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl text-sm font-bold text-white cursor-pointer shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:shadow-[0_4px_30px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
+                >
                   ✨ Visualizar evolução detalhada
                 </button>
               </div>
             ) : (
-              <div style={{ animation: "fadeUp 0.4s ease" }}>
-                <button type="button" onClick={() => setResult(false)} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", color: C.textMuted, fontSize: "0.8rem", marginBottom: 20, padding: 0 }}>
-                  <RefreshCw size={13} /> Voltar e ajustar valores
+              <div className="animate-[fadeUp_400ms_ease-out]">
+                <button
+                  type="button"
+                  onClick={() => setResult(false)}
+                  className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-zinc-500 hover:text-zinc-300 text-xs font-semibold transition-all duration-300 mb-5 p-0"
+                >
+                  <RefreshCw size={12} className="animate-spin-slow" /> Voltar e ajustar valores
                 </button>
                 
                 <ResultCards
@@ -1177,33 +1347,39 @@ export function Simulator() {
                   valorInicial={inputs.valorInicial}
                 />
 
-                <div style={{ background: C.surfaceEl, border: `1px solid ${C.green}25`, borderRadius: 14, padding: "20px 22px", marginBottom: 20, display: "flex", gap: 14, alignItems: "flex-start" }}>
-                  <div style={{ fontSize: 28, flexShrink: 0 }}>🧠</div>
+                <div className="bg-zinc-900/40 backdrop-blur-md border border-emerald-800/30 rounded-2xl p-5 mb-5 flex gap-3.5 items-start text-left transition-all duration-300 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                  <div className="text-2xl select-none flex-shrink-0">🧠</div>
                   <div>
-                    <div style={{ fontSize: "0.8rem", color: C.green, fontWeight: 700, marginBottom: 6 }}>
+                    <div className="text-xs font-bold text-emerald-400 mb-1.5">
                       {outputs.totalJuros > outputs.totalInvestido ? `O efeito dos juros compostos superou seus depósitos!` : `Os juros já representam boa parte do seu montante!`}
                     </div>
-                    <div style={{ fontSize: "0.78rem", color: C.textSoft, lineHeight: 1.65 }}>
-                      Você acumulou <strong style={{ color: C.text }}>{formatCurrency(outputs.totalJuros)}</strong> apenas em juros reais.
+                    <div className="text-xs text-zinc-400 leading-relaxed">
+                      Você acumulou <strong className="text-zinc-200">{formatCurrency(outputs.totalJuros)}</strong> apenas em juros reais.
                       {viradaMes && (
                         <>
-                          {" "}Seu <strong style={{ color: C.amber }}>Ponto Zero</strong> (quando os juros rendem mais do que o seu aporte mensal) ocorrerá em <strong style={{ color: C.amber }}>{formatTimeSpan(viradaMes)}</strong>!
+                          {" "}Seu <strong className="text-amber-500">Ponto Zero</strong> (quando os juros rendem mais do que o seu aporte mensal) ocorrerá em <strong className="text-amber-500 font-semibold">{formatTimeSpan(viradaMes)}</strong>!
                         </>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px", marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-                    <BarChart2 size={16} color={C.blue} />
-                    <span style={{ fontWeight: 700, fontSize: "0.9rem", color: C.text }}>Linha do Tempo de Investimentos</span>
-                    <div style={{ marginLeft: "auto", display: "flex", gap: 14 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.72rem", color: C.textSoft }}><div style={{ width: 10, height: 10, borderRadius: 2, background: C.blue }} />Capital Investido</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.72rem", color: C.textSoft }}><div style={{ width: 10, height: 10, borderRadius: 2, background: C.green }} />Patrimônio Total</div>
+                <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-5 mb-4 text-left transition-all duration-300 hover:border-emerald-500/30 hover:shadow-[0_0_25px_rgba(16,185,129,0.15)]">
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
+                    <BarChart2 size={16} className="text-emerald-500" />
+                    <span className="font-bold text-sm text-zinc-100">Linha do Tempo de Investimentos</span>
+                    <div className="sm:ml-auto flex gap-3.5 mt-2 sm:mt-0">
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
+                        <div className="w-2.5 h-2.5 rounded-sm bg-emerald-700" style={{ border: "1px dashed rgba(255,255,255,0.2)" }} />
+                        Poder de Compra Real
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
+                        <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                        Patrimônio Nominal
+                      </div>
                     </div>
                   </div>
-                  <MainChart tabela={outputs.tabelaMesAMes} viradaMes={viradaMes} dobrouMes={dobrouMes} />
+                  <MainChart chartData={chartData} viradaMes={viradaMes} dobrouMes={dobrouMes} />
                 </div>
 
                 <ProcrastCard
@@ -1222,10 +1398,10 @@ export function Simulator() {
 
         {/* ── CENÁRIOS ── */}
         {tab === "cenarios" && (
-          <div style={{ animation: "fadeUp 0.3s ease" }}>
-            <div style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: "1.2rem", fontWeight: 700, color: C.text, marginBottom: 4 }}>Comparador de Estratégias</h2>
-              <p style={{ fontSize: "0.8rem", color: C.textSoft }}>Simule até 3 cenários diferentes de investimentos em paralelo.</p>
+          <div className="animate-[fadeUp_300ms_ease-out]">
+            <div className="mb-5 text-left">
+              <h2 className="text-lg font-bold text-white mb-1">Comparador de Estratégias</h2>
+              <p className="text-xs text-zinc-400 leading-relaxed">Simule até 3 cenários diferentes de investimentos em paralelo.</p>
             </div>
             {scenarios.map((s, i) => (
               <ScenarioRow
@@ -1246,34 +1422,17 @@ export function Simulator() {
                   const next = INVESTIMENTOS[nextIndex];
                   setScen(prev => [...prev, { ...base, invId: next.id }]);
                 }}
-                style={{
-                  width: "100%",
-                  padding: "18px",
-                  background: "transparent",
-                  border: `2px dashed ${C.border}`,
-                  borderRadius: 14,
-                  cursor: "pointer",
-                  color: C.textMuted,
-                  fontSize: "0.82rem",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  marginBottom: 16,
-                  transition: "all 0.2s"
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.green; e.currentTarget.style.color = C.green; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.textMuted; }}
+                className="w-full py-4 bg-transparent border-2 border-dashed border-zinc-800 hover:border-emerald-500/50 hover:bg-emerald-950/10 rounded-2xl cursor-pointer text-zinc-550 hover:text-emerald-400 text-xs font-bold flex items-center justify-center gap-2 mb-4 transition-all duration-300 hover:shadow-[0_0_15px_rgba(16,185,129,0.05)]"
               >
                 <Plus size={18} /> Adicionar outro cenário para comparar
               </button>
             )}
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-                <BarChart2 size={16} color={C.blue} />
-                <span style={{ fontWeight: 700, fontSize: "0.88rem", color: C.text }}>Gráfico de Evolução Comparativa</span>
-                <div style={{ marginLeft: "auto", display: "flex", gap: 12, flexWrap: "wrap" }}>
+            
+            <div className="bg-zinc-900/40 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-5 text-left transition-all duration-300 hover:border-emerald-800/30 hover:shadow-[0_0_20px_rgba(16,185,129,0.05)]">
+              <div className="flex items-center gap-2 mb-4.5 flex-wrap">
+                <BarChart2 size={16} className="text-emerald-500" />
+                <span className="font-bold text-xs sm:text-sm text-zinc-100">Gráfico de Evolução Comparativa</span>
+                <div className="sm:ml-auto flex gap-3 mt-2 sm:mt-0 flex-wrap">
                   {scenarios.map((_, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.72rem", color: C.textSoft }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: SCEN_COLORS[i] }} />{SCEN_NAMES[i]}
@@ -1288,14 +1447,14 @@ export function Simulator() {
 
         {/* ── INVESTIMENTOS ── */}
         {tab === "tabela" && (
-          <div style={{ animation: "fadeUp 0.3s ease" }}>
+          <div className="animate-[fadeUp_300ms_ease-out]">
             <InvestTable />
           </div>
         )}
 
         {/* ── HP-12C ── */}
         {tab === "hp12c" && (
-          <div style={{ animation: "fadeUp 0.3s ease" }}>
+          <div className="animate-[fadeUp_300ms_ease-out]">
             <HP12CMode />
           </div>
         )}

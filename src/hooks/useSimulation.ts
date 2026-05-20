@@ -1,7 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchCDI, fetchIPCA } from '@services/financeApi';
 import { CompoundInterestEngine } from '@core/finance/engine/CompoundInterestEngine';
+import Decimal from 'decimal.js';
 import type { SimulationInputs, SimulationOutputs } from '../types/financeiro';
+
+export interface ChartPoint {
+  mes: number;
+  "Patrimônio Nominal": number;
+  "Patrimônio Real descontado a Inflação": number;
+  capital: number;
+  juros: number;
+}
 
 export function useSimulation() {
   const [valorInicial, setValorInicial] = useState<number>(5000);
@@ -52,6 +61,26 @@ export function useSimulation() {
     return CompoundInterestEngine.run(inputs);
   }, [inputs]);
 
+  const chartData = useMemo<ChartPoint[]>(() => {
+    const annualInflationFraction = new Decimal(inputs.inflacaoAnual).div(100);
+    return outputs.tabelaMesAMes.map((snapshot) => {
+      const m = snapshot.mes;
+      const nominal = snapshot.total;
+      
+      const yearsElapsed = m / 12;
+      const infFactor = annualInflationFraction.add(1).pow(yearsElapsed);
+      const real = infFactor.isZero() ? nominal : new Decimal(nominal).div(infFactor).toNumber();
+      
+      return {
+        mes: m,
+        "Patrimônio Nominal": Math.round(nominal),
+        "Patrimônio Real descontado a Inflação": Math.round(real),
+        capital: snapshot.capital,
+        juros: snapshot.juros,
+      };
+    });
+  }, [outputs.tabelaMesAMes, inputs.inflacaoAnual]);
+
   return {
     inputs,
     setValorInicial,
@@ -60,7 +89,9 @@ export function useSimulation() {
     setTaxaAnual,
     setInflacaoAnual,
     outputs,
+    chartData,
     isLoading,
   };
 }
 export type UseSimulationReturn = ReturnType<typeof useSimulation>;
+

@@ -51,6 +51,14 @@ Representa uma taxa de referência financeira.
 | fonte       | string  | Origem do dado (ex: "Banco Central", "manual") |
 | atualizadoEm| Date    | Última atualização do valor                    |
 
+## 🎨 IDENTIDADE VISUAL: FINTECH DARK MODE PREMIUM
+- Background Principal: Escuro Absoluto (`bg-zinc-950` ou `bg-[#09090B]`)
+- Background dos Cards: Cinza Grafite (`bg-zinc-900/50`) com efeito Backdrop Blur
+- Bordas e Divisores: Linhas finas em verde escuro ou cinza fechado (`border-zinc-800` ou `border-emerald-950/50`)
+- Textos: Títulos em Branco Puro (`text-white`) e descrições em Cinza Claro (`text-zinc-400`)
+- Cores de Destaque e Gradientes: Verde Esmeralda (`text-emerald-400`, `bg-gradient-to-br from-emerald-500 to-green-600`)
+- Gráficos (Recharts): Linha principal em `stroke="#10b981"` (Emerald 500) com preenchimento em gradiente esmaecido (Fade Out) até o fundo escuro.
+
 ---
 
 ## 🛑 REGRAS DE OURO
