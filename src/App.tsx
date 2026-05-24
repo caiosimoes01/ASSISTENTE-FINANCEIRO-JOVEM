@@ -1,5 +1,5 @@
 import { Simulator } from '@components/young-finance/Simulator';
-import { Header } from '@components/young-finance/Header';
+import Header from '@components/young-finance/Header';
 
 export default function App() {
   return (
