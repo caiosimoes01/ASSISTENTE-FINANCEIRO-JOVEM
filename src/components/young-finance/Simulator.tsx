@@ -87,9 +87,7 @@ export function Simulator() {
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             Simulador interativo
           </div>
-          <h1 className="font-display text-4xl md:text-6xl text-foreground leading-[1.05]">
-            Veja seu dinheiro <em className="text-accent not-italic">crescer</em> antes de investir um real.
-          </h1>
+  <h1 className="font-display text-4xl md:text-6xl text-foreground leading-[1.05]">Entenda seu dinheiro</h1>
           <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl">
             Ajuste os valores, escolha sua taxa e descubra o poder dos juros compostos — sem planilha, sem complicação.
           </p>
