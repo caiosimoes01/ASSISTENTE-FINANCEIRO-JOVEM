@@ -75,7 +75,13 @@ export async function fetchBacenRate(serieId: number): Promise<number> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, {
+  signal: controller.signal,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
     clearTimeout(timeoutId);
 
     if (!response.ok) {

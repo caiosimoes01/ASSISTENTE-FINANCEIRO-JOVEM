@@ -1,62 +1,31 @@
-import { useSimulation } from '@hooks/useSimulation';
-import { saveSimulation } from '../../services/historyService';
-import { auth, signInWithGoogle } from '../../services/firebase';
-import { useState } from 'react';
+import { useState } from "react";
 import { InputField } from "./InputField";
 import { BentoCard } from "./BentoCard";
 import { GrowthChart } from "./GrowthChart";
-import { Switch } from "../../components/ui/switch";
+import { Switch } from "@/components/ui/switch";
 import { Sparkles, TrendingUp, Wallet, Coins, Clock, ArrowUpRight } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function Simulator() {
-  const {
-    inputs,
-    setValorInicial,
-    setAporteMensal,
-    setPrazoAnos,
-    setTaxaAnual,
-    chartData,
-  } = useSimulation();
-
+  const [initial, setInitial] = useState(1000);
+  const [monthly, setMonthly] = useState(300);
+  const [years, setYears] = useState(10);
+  const [rate, setRate] = useState(11.5);
   const [whatIf, setWhatIf] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  // Simple derived calculations (can be replaced by outputs if needed)
-  const totalInvested = inputs.valorInicial + inputs.aporteMensal * 12 * inputs.prazoAnos;
-  const finalAmount = Math.round(
-    inputs.valorInicial * Math.pow(1 + inputs.taxaAnual / 100, inputs.prazoAnos) +
-      inputs.aporteMensal * ((Math.pow(1 + inputs.taxaAnual / 100, inputs.prazoAnos) - 1) / (inputs.taxaAnual / 100)) * 12
-  );
+  // Placeholder results — hook your own calculation logic here
+  const totalInvested = initial + monthly * 12 * years;
+  const finalAmount = Math.round(initial * Math.pow(1 + rate / 100, years) +
+    monthly * ((Math.pow(1 + rate / 100, years) - 1) / (rate / 100)) * 12);
   const interest = Math.max(0, finalAmount - totalInvested);
 
   const rateShortcuts = [
     { label: "Poupança", value: 6, sub: "~6%" },
     { label: "CDI", value: 11.5, sub: "~11.5%" },
   ];
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      let user = auth.currentUser;
-      if (!user) {
-        user = await signInWithGoogle();
-      }
-      await saveSimulation(user.uid, {
-        inputs,
-        results: { totalInvested, finalAmount, interest },
-      });
-      alert("Simulação salva com sucesso!");
-    } catch (e) {
-      console.error(e);
-      alert("Falha ao salvar a simulação.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,14 +64,14 @@ export function Simulator() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[420px_1f] gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-[420px_1fr] gap-6 lg:gap-8">
           {/* Form */}
           <section className="space-y-4">
             <InputField
               label="Valor inicial"
               prefix="R$"
-              value={inputs.valorInicial}
-              onChange={v => setValorInicial(Number(v))}
+              value={initial}
+              onChange={setInitial}
               min={0}
               max={100000}
               step={100}
@@ -111,8 +80,8 @@ export function Simulator() {
             <InputField
               label="Aporte mensal"
               prefix="R$"
-              value={inputs.aporteMensal}
-              onChange={v => setAporteMensal(Number(v))}
+              value={monthly}
+              onChange={setMonthly}
               min={0}
               max={10000}
               step={50}
@@ -121,37 +90,47 @@ export function Simulator() {
             <InputField
               label="Tempo"
               suffix="anos"
-              value={inputs.prazoAnos}
-              onChange={v => setPrazoAnos(Number(v))}
+              value={years}
+              onChange={setYears}
               min={1}
               max={40}
               step={1}
               hint="horizonte"
             />
+
             <InputField
               label="Taxa de juros anual"
               suffix="%"
-              value={inputs.taxaAnual}
-              onChange={v => setTaxaAnual(Number(v))}
+              value={rate}
+              onChange={setRate}
               min={0}
               max={20}
               step={0.1}
               hint="rendimento esperado"
             >
               <div className="mt-4 flex flex-wrap gap-2">
-                {rateShortcuts.map(s => {
-                  const active = Math.abs(inputs.taxaAnual - s.value) < 0.05;
+                {rateShortcuts.map((s) => {
+                  const active = Math.abs(rate - s.value) < 0.05;
                   return (
                     <button
                       key={s.label}
-                      onClick={() => setTaxaAnual(s.value)}
+                      onClick={() => setRate(s.value)}
                       className={cn(
                         "group flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all",
-                        active ? "bg-foreground text-background border-foreground" : "bg-surface border-border hover:border-foreground/40"
+                        active
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-surface border-border hover:border-foreground/40",
                       )}
                     >
                       <span>{s.label}</span>
-                      <span className={cn("text-[11px] tabular-nums", active ? "text-accent" : "text-muted-foreground")}> {s.sub}</span>
+                      <span
+                        className={cn(
+                          "text-[11px] tabular-nums",
+                          active ? "text-accent" : "text-muted-foreground",
+                        )}
+                      >
+                        {s.sub}
+                      </span>
                     </button>
                   );
                 })}
@@ -171,7 +150,9 @@ export function Simulator() {
                     </p>
                     <Switch checked={whatIf} onCheckedChange={setWhatIf} />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Calcula o custo da espera.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Calcula o custo da espera.
+                  </p>
                 </div>
               </div>
 
@@ -221,17 +202,7 @@ export function Simulator() {
             </div>
 
             {/* Chart */}
-            <GrowthChart data={chartData} />
-            {/* Save button */}
-            <div className="flex justify-end mt-4">
-              <button
-                disabled={saving}
-                onClick={handleSave}
-                className="px-6 py-2 rounded-full bg-foreground text-background hover:bg-foreground/90 transition disabled:opacity-50"
-              >
-                {saving ? "Salvando..." : "Salvar Simulação"}
-              </button>
-            </div>
+            <GrowthChart />
           </section>
         </div>
 
