@@ -6,9 +6,10 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
+    fontFamily: {
+      sans: ['system-ui', 'sans-serif'],
+      display: ['system-ui', 'sans-serif'],
+    },
       colors: {
         brand: {
           50: '#f0fdf4',
