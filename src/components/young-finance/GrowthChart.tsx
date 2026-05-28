@@ -1,81 +1,161 @@
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import React from 'react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { cn } from './utils';
 
-export function GrowthChart({ data }: { data: any[] }) {
-  return (
-    <div className="rounded-3xl bg-surface border border-border/70 p-5 md:p-7">
-      <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
-        <div>
-          <h3 className="font-display text-2xl md:text-3xl text-foreground">
-            Sua evolução patrimonial
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Visualize o efeito dos juros compostos ao longo do tempo.
+interface GrowthChartDataPoint {
+  [key: string]: string | number;
+}
+
+interface GrowthChartProps {
+  data: GrowthChartDataPoint[];
+  dataKeyY?: string;
+  dataKeyX?: string;
+  title?: string;
+  height?: number;
+  className?: string;
+}
+
+/**
+ * Componente de gráfico de área para visualizar crescimento financeiro
+ * Usa Recharts com gradiente neon e tema dark mode
+ */
+export const GrowthChart: React.FC<GrowthChartProps> = ({
+  data,
+  dataKeyY = 'valor',
+  dataKeyX = 'mes',
+  title,
+  height = 300,
+  className,
+}) => {
+  // Customizar tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const dataPoint = payload[0].payload;
+      return (
+        <div className="bg-youfing-secondary border border-youfing-light rounded-lg p-3 shadow-youfing-lg">
+          <p className="text-youfing-secondary text-xs">
+            {dataKeyX}: {dataPoint[dataKeyX]}
+          </p>
+          <p className="text-accent font-semibold text-sm">
+            R$ {Number(dataPoint[dataKeyY]).toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </p>
         </div>
-        <div className="flex items-center gap-4 text-xs">
-          <span className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-accent" />
-            Patrimônio total
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-foreground" />
-            Total investido
-          </span>
-        </div>
-      </div>
+      );
+    }
+    return null;
+  };
 
-      <div className="h-[280px] md:h-[340px] w-full">
+  // Se não há dados, mostrar placeholder
+  if (!data || data.length === 0) {
+    return (
+      <div
+        className={cn(
+          'flex items-center justify-center rounded-2xl',
+          'bg-youfing-secondary border border-youfing-light',
+          'text-youfing-tertiary',
+          className
+        )}
+        style={{ height: `${height}px` }}
+      >
+        <p className="text-sm">Nenhum dado disponível para exibição</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('flex flex-col gap-4 w-full', className)}>
+      {title && (
+        <h3 className="text-sm font-semibold text-youfing-secondary">
+          {title}
+        </h3>
+      )}
+
+      <div
+        className="rounded-2xl bg-youfing-secondary p-4 border border-youfing-light shadow-youfing-md"
+        style={{ height: `${height}px` }}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.78 0.18 145)" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="oklch(0.78 0.18 145)" stopOpacity={0.02} />
-              </linearGradient>
-              <linearGradient id="investedFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.22 0.02 250)" stopOpacity={0.15} />
-                <stop offset="100%" stopColor="oklch(0.22 0.02 250)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid stroke="oklch(0.92 0.008 95)" vertical={false} />
-            <XAxis dataKey="year" stroke="oklch(0.5 0.015 250)" tickLine={false} axisLine={false} fontSize={12} />
-            <YAxis
-              stroke="oklch(0.5 0.015 250)"
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            {/* Grid customizado */}
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--color-border)"
+              vertical={false}
+            />
+
+            {/* Eixo X */}
+            <XAxis
+              dataKey={dataKeyX}
+              stroke="var(--color-text-tertiary)"
+              style={{ fontSize: '12px' }}
               tickLine={false}
               axisLine={false}
-              fontSize={12}
-              tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`}
-              width={55}
             />
-            <Tooltip
-              contentStyle={{
-                background: "white",
-                border: "1px solid oklch(0.92 0.008 95)",
-                borderRadius: "0.75rem",
-                fontSize: "12px",
-              }}
-              formatter={(value:any) =>
-                Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 })
+
+            {/* Eixo Y */}
+            <YAxis
+              stroke="var(--color-text-tertiary)"
+              style={{ fontSize: '12px' }}
+              tickFormatter={(value) =>
+                `R$ ${(value / 1000).toFixed(0)}k`
               }
+              tickLine={false}
+              axisLine={false}
+              width={60}
             />
+
+            {/* Tooltip customizado */}
+            <Tooltip content={<CustomTooltip />} cursor={false} />
+
+            {/* Área com gradiente neon */}
+            <defs>
+              <linearGradient
+                id="colorGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-accent-primary)"
+                  stopOpacity={0.6}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-accent-primary)"
+                  stopOpacity={0.05}
+                />
+              </linearGradient>
+            </defs>
+
             <Area
               type="monotone"
-              dataKey="total"
-              stroke="oklch(0.55 0.18 145)"
-              strokeWidth={2.5}
-              fill="url(#growthFill)"
-            />
-            <Area
-              type="monotone"
-              dataKey="invested"
-              stroke="oklch(0.22 0.02 250)"
+              dataKey={dataKeyY}
+              stroke="var(--color-accent-primary)"
               strokeWidth={2}
-              strokeDasharray="4 4"
-              fill="url(#investedFill)"
+              fill="url(#colorGradient)"
+              isAnimationActive={true}
+              animationDuration={800}
+              dot={false}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
-}
+};

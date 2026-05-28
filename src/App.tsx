@@ -1,11 +1,17 @@
-import { Simulator } from '@components/young-finance/Simulator';
-import Header from '@components/young-finance/Header';
+// ✅ TEMPORÁRIO: Renderizando SHOWCASE para visualizar componentes
+import { YoungFinanceShowcase } from '@/components/young-finance/SHOWCASE';
+
+// 🔄 CÓDIGO ANTIGO - Comentado para preservação
+// import { Simulator } from '@components/young-finance/Simulator';
+// 
+// export default function App() {
+//   return (
+//     <Simulator />
+//   );
+// }
 
 export default function App() {
   return (
-    <div className="bg-[#09090b] min-h-screen text-white">
-      <Header />
-      <Simulator />
-    </div>
+    <YoungFinanceShowcase />
   );
 }

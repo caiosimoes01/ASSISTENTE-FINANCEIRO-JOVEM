@@ -1,7 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+# 🎨 TAILWIND COLORS CONFIG - Premium Dark Mode
 
+## 📋 Paleta de Cores YoungFinance
+
+Variáveis CSS para aplicar a identidade visual premium fintech com **fundo azul escuro/preto profundo** e **detalhes em verde neon**.
+
+---
+
+## 🖌️ Bloco CSS para injetar em `src/index.css`
+
+Copie e cole tudo isto **no final** do arquivo `src/index.css` (após `@tailwind utilities;`):
+
+```css
 /* ==========================================
    YOUFINGFINANCE COLOR PALETTE - DARK MODE
    ========================================== */
@@ -178,3 +187,51 @@ body {
 * {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
+```
+
+---
+
+## 🎯 Como usar
+
+### Opção 1: Classes utilitárias
+```tsx
+<div className="bg-youfing-primary text-youfing-primary">
+  <button className="bg-accent text-white rounded px-4 py-2 shadow-youfing-glow">
+    CTA Verde Neon
+  </button>
+</div>
+```
+
+### Opção 2: Variáveis CSS diretas
+```css
+.meu-elemento {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-accent-primary);
+  box-shadow: var(--shadow-glow-intense);
+}
+```
+
+### Opção 3: Tailwind (com tailwind.config.js estendido)
+```tsx
+<div className="bg-youfing-secondary text-accent shadow-youfing-glow">
+  Conteúdo premium
+</div>
+```
+
+---
+
+## 📊 Referência Rápida
+
+| Elemento | Cor | Código |
+|----------|-----|--------|
+| Fundo principal | Azul escuro/preto | `#0a0f1a` |
+| Fundo secundário | Azul levemente claro | `#0f1629` |
+| Texto principal | Branco | `#ffffff` |
+| Texto secundário | Cinza-azulado | `#b0b8d4` |
+| Destaque | Verde neon | `#00d084` |
+| Destaque claro | Verde neon claro | `#1ae89f` |
+
+---
+
+**Criado em:** 2026-05-27
+**Padrão:** YoungFinance Premium Dark Mode

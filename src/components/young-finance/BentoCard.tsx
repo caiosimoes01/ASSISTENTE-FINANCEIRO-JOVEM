@@ -1,58 +1,72 @@
-import { ReactNode } from "react";
-import { cn } from "../../lib/utils";
+import React from 'react';
+import { cn } from './utils';
 
 interface BentoCardProps {
   label: string;
   value: string;
   hint: string;
-  icon?: ReactNode;
+  icon?: React.ReactNode;
   highlight?: boolean;
   className?: string;
 }
 
-export function BentoCard({ label, value, hint, icon, highlight, className }: BentoCardProps) {
+export const BentoCard: React.FC<BentoCardProps> = ({
+  label,
+  value,
+  hint,
+  icon,
+  highlight = false,
+  className,
+}) => {
   return (
     <div
       className={cn(
-        "relative rounded-3xl border p-6 flex flex-col justify-between min-h-[180px] overflow-hidden transition-all",
-        highlight ? "bg-foreground text-background border-foreground" : "bg-surface border-border/70 hover:border-foreground/30",
-        className,
+        'rounded-2xl p-6 transition-all duration-300',
+        'flex flex-col gap-3',
+        'border border-youfing',
+        highlight
+          ? 'bg-accent text-youfing-primary shadow-youfing-glow-intense'
+          : 'bg-youfing-secondary text-youfing-primary shadow-youfing-md hover:shadow-youfing-lg hover:border-accent',
+        className
       )}
     >
-      <div className="flex items-center justify-between">
-        <span
-          className={cn(
-            "text-xs font-medium uppercase tracking-wider",
-            highlight ? "text-background/60" : "text-muted-foreground",
-          )}
-        >
-          {label}
-        </span>
+      {/* Header com icon e label */}
+      <div className="flex items-center justify-between gap-2">
         {icon && (
           <div
             className={cn(
-              "h-8 w-8 rounded-full grid place-items-center",
-              highlight ? "bg-background/10 text-accent" : "bg-accent/15 text-accent-foreground",
+              'flex-shrink-0',
+              highlight
+                ? 'text-youfing-primary'
+                : 'text-accent'
             )}
           >
             {icon}
           </div>
         )}
+        <span className={cn(
+          'text-sm font-medium',
+          highlight ? 'text-youfing-primary' : 'text-youfing-secondary'
+        )}>
+          {label}
+        </span>
       </div>
 
-      <div className="mt-4">
-        <div className="font-display text-4xl md:text-5xl leading-none tabular-nums">
+      {/* Valor principal */}
+      <div className="flex flex-col gap-1">
+        <p className={cn(
+          'text-2xl font-bold tracking-tight',
+          highlight ? 'text-youfing-primary' : 'text-accent'
+        )}>
           {value}
-        </div>
-        <p
-          className={cn(
-            "mt-3 text-sm leading-relaxed max-w-[28ch]",
-            highlight ? "text-background/70" : "text-muted-foreground",
-          )}
-        >
+        </p>
+        <p className={cn(
+          'text-xs',
+          highlight ? 'text-youfing-primary opacity-80' : 'text-youfing-tertiary'
+        )}>
           {hint}
         </p>
       </div>
     </div>
   );
-}
+};
