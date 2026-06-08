@@ -23,6 +23,7 @@
     /* Path aliases */
     "baseUrl": ".",
     "paths": {
+      "@/*": ["src/*"],
       "@core/*": ["src/core/*"],
       "@types/*": ["src/types/*"],
       "@components/*": ["src/components/*"],

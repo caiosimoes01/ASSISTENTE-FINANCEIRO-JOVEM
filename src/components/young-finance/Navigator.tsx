@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Zap, BarChart2, Target, Calculator } from 'lucide-react';
-import { AssistantTab } from './AssistantTab';
+import AssistantTab from './AssistantTab';
 import { ScenariosTab } from './ScenariosTab';
 import { InvestimentosTab } from './InvestimentosTab';
 import { Hp12cTab } from './Hp12cTab';
@@ -121,7 +121,9 @@ export const Navigator: React.FC = () => {
 
       {/* Conteúdo da Aba Ativa */}
       <main className="w-full">
-        <ActiveComponent />
+        <div key={activeTab} className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+          <ActiveComponent />
+        </div>
       </main>
     </div>
   );
