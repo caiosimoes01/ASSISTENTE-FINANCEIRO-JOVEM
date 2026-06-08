@@ -57,6 +57,12 @@ export function ScenariosTab() {
     [scenarios]
   );
 
+  // Sort scenarios by final projected amount (ascending)
+  const sortedScenarios = useMemo(() => {
+    const finalMap = new Map(results.map((it) => [it.s.id, it.r.finalAmount]));
+    return [...scenarios].sort((a, b) => (finalMap.get(a.id) ?? 0) - (finalMap.get(b.id) ?? 0));
+  }, [scenarios, results]);
+
   const chartData = useMemo(() => {
     const maxYears = Math.max(...scenarios.map((s) => s.years), 1);
     const rows: Record<string, number>[] = [];
@@ -111,8 +117,8 @@ export function ScenariosTab() {
 
       <div className="grid lg:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
-          {results.map(({ s, r }) => {
-            const c = COLORS[s.color];
+          {sortedScenarios.map((s) => { const result = results.find(it => it.s.id === s.id)!; const r = result.r; const c = COLORS[s.color];
+
             return (
               <motion.div
                 key={s.id}
@@ -230,7 +236,7 @@ export function ScenariosTab() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 15, right: 40, left: 10, bottom: 15 }}>
                   <defs>
-                    {scenarios.map((s) => (
+                    {sortedScenarios.map((s) => (
                       <linearGradient key={s.id} id={`g${s.id}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={COLORS[s.color].hex} stopOpacity={0.35} />
                         <stop offset="100%" stopColor={COLORS[s.color].hex} stopOpacity={0} />
@@ -251,9 +257,9 @@ export function ScenariosTab() {
                     contentStyle={{ background: "#111827", border: "1px solid #1E2D45", borderRadius: "0.75rem", fontSize: "12px", color: "#F1F5F9" }}
                     labelFormatter={(l) => `Ano ${l}`}
                     itemSorter={(item) => Number(item.value) * -1}
-                    formatter={(value: any) => [fmtBRL(Number(value ?? 0)), "Patrimônio"]}
+                    formatter={(value: any, name: any) => [fmtBRL(Number(value || 0)), name]}
                   />
-                  {scenarios.map((s) => (
+                  {sortedScenarios.map((s) => (
                     <Area key={s.id} type="monotone" dataKey={s.id} stroke={COLORS[s.color].hex} strokeWidth={2.5} fill={`url(#g${s.id})`} />
                   ))}
                 </AreaChart>
