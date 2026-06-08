@@ -132,7 +132,11 @@ export const SliderField: React.FC<SliderFieldProps> = ({
         <span>{prefix}{min.toLocaleString()}</span>
         <span>{prefix}{max.toLocaleString()}</span>
       </div>
-    </div>
-    {hint && <p className="text-xs text-youfing-tertiary mt-1">{hint}</p>}
+        {hint && (
+          <p className="text-xs text-youfing-tertiary mt-1">
+            {hint}
+          </p>
+        )}
+      </div>
   );
 };
