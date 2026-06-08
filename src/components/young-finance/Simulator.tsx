@@ -4,7 +4,7 @@ import { auth, signInWithGoogle } from '../../services/firebase';
 import { useState } from 'react';
 import { InputField } from "./InputField";
 import { BentoCard } from "./BentoCard";
-import { GrowthChart } from "./GrowthChart";
+import { GrowthChart, GrowthChartDataPoint } from "./GrowthChart";
 import { Switch } from "../../components/ui/switch";
 import { Sparkles, TrendingUp, Wallet, Coins, Clock, ArrowUpRight } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -41,7 +41,7 @@ export function Simulator() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      let user = auth.currentUser;
+      let user = auth!.currentUser;
       if (!user) {
         user = await signInWithGoogle();
       }
@@ -219,7 +219,10 @@ export function Simulator() {
             </div>
 
             {/* Chart */}
-            <GrowthChart data={chartData} />
+            <GrowthChart data={chartData.map((pt): GrowthChartDataPoint => ({
+              mes: pt.mes,
+              valor: pt["Patrimônio Nominal"],
+            }))} />
             {/* Save button */}
             <div className="flex justify-end mt-4">
               <button

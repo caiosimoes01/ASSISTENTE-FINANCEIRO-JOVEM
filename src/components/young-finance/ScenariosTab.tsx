@@ -251,10 +251,7 @@ export function ScenariosTab() {
                     contentStyle={{ background: "#111827", border: "1px solid #1E2D45", borderRadius: "0.75rem", fontSize: "12px", color: "#F1F5F9" }}
                     labelFormatter={(l) => `Ano ${l}`}
                     itemSorter={(item) => Number(item.value) * -1}
-                    formatter={(v: number, key) => {
-                      const s = scenarios.find((sc) => sc.id === key);
-                      return [fmtBRL(v), s?.name ?? key];
-                    }}
+                    formatter={(value: any) => [fmtBRL(Number(value ?? 0)), '']}
                   />
                   {scenarios.map((s) => (
                     <Area key={s.id} type="monotone" dataKey={s.id} stroke={COLORS[s.color].hex} strokeWidth={2.5} fill={`url(#g${s.id})`} />

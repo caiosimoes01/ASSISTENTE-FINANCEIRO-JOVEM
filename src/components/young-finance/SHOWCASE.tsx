@@ -4,14 +4,14 @@
  * Pode ser deletado após uso
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BentoCard, SliderField, GrowthChart } from './index';
 import { TrendingUp, Wallet, Target } from 'lucide-react';
 
 /**
  * ✅ EXEMPLO 1: BentoCard
  */
-function BentoCardExample() {
+export function BentoCardExample() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Card normal */}
@@ -53,7 +53,7 @@ function BentoCardExample() {
 /**
  * ✅ EXEMPLO 2: SliderField
  */
-function SliderFieldExample() {
+export function SliderFieldExample() {
   const [capitalInicial, setCapitalInicial] = useState(10000);
   const [aporteMensal, setAporteMensal] = useState(500);
   const [periodoMeses, setPeriodoMeses] = useState(60);
@@ -121,7 +121,7 @@ function SliderFieldExample() {
 /**
  * ✅ EXEMPLO 3: GrowthChart
  */
-function GrowthChartExample() {
+export function GrowthChartExample() {
   // Dados simulados de projeção
   const chartData = [
     { mes: 0, valor: 10000 },
@@ -158,7 +158,6 @@ export function YoungFinanceShowcase() {
 
   // Simular cálculo de rendimento
   const valorFuturo = capitalInicial + aporteMensal * periodoMeses;
-  const rendimento = valorFuturo - (capitalInicial + aporteMensal * periodoMeses);
 
   // Gerar dados do gráfico dinamicamente
   const generateChartData = () => {

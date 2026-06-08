@@ -22,11 +22,10 @@ export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 export const provider = new GoogleAuthProvider();
 
-/**
- * Sign in the user with Google using a popup.
- * Returns the authenticated Firebase User.
- */
 export async function signInWithGoogle(): Promise<User> {
+  if (!auth) {
+    throw new Error("Firebase auth is not initialized");
+  }
   const result = await signInWithPopup(auth, provider);
   return result.user;
 }

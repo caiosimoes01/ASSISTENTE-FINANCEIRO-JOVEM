@@ -345,7 +345,7 @@ export default function AssistantTab() {
                             color: "#F1F5F9",
                           }}
                           labelFormatter={(l) => `Ano ${l}`}
-                          formatter={(value: any, name: any) => [fmtBRL(Number(value ?? 0)), name ?? '']}
+                          formatter={(value: any) => [fmtBRL(Number(value ?? 0)), '']}
                         />
 
                         <Area type="monotone" dataKey="total" name="Patrimônio Total" stroke="#10b981" strokeWidth={2} fill="url(#colorTotal)" order={2} />
@@ -368,10 +368,10 @@ export default function AssistantTab() {
                           />
                         )}
                         
-                        {isSimulated && doubleYear !== null && doubleYear <= years && doubleValue !== undefined && (
+                        {isSimulated && doubleYear !== null && doubleYear <= years && doubleValue !== null && doubleValue !== undefined && (
                           <ReferenceDot
                             x={doubleYear}
-                            y={doubleValue}
+                            y={doubleValue ?? undefined}
                             r={5}
                             fill="#10b981"
                             stroke="#111827"

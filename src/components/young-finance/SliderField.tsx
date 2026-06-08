@@ -9,6 +9,7 @@ interface SliderFieldProps {
   step: number;
   onChange: (value: number) => void;
   prefix?: string;
+  suffix?: string;
   hint?: string;
 }
 
@@ -20,6 +21,7 @@ export const SliderField: React.FC<SliderFieldProps> = ({
   step,
   onChange,
   prefix = '',
+  suffix = '',
   hint = '',
 }) => {
   // Estado local para sincronização imediata do input
@@ -60,7 +62,7 @@ export const SliderField: React.FC<SliderFieldProps> = ({
           {label}
         </label>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-youfing-tertiary">{prefix}</span>
+          {prefix && <span className="text-xs text-youfing-tertiary">{prefix}</span>}
           <input
             type="number"
             value={inputValue}
@@ -77,6 +79,7 @@ export const SliderField: React.FC<SliderFieldProps> = ({
               'transition-all duration-200'
             )}
           />
+          {suffix && <span className="text-xs text-youfing-tertiary">{suffix}</span>}
         </div>
       </div>
 

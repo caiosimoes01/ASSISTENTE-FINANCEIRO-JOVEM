@@ -10,7 +10,7 @@ export { GrowthChart } from './GrowthChart';
 
 // Navegação
 export { Navigator } from './Navigator';
-export { AssistantTab } from './AssistantTab';
+export { default as AssistantTab } from './AssistantTab';
 export { ScenariosTab } from './ScenariosTab';
 export { InvestimentosTab } from './InvestimentosTab';
 export { Hp12cTab } from './Hp12cTab';

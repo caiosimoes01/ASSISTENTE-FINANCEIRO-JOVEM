@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import { cn } from './utils';
 
-interface GrowthChartDataPoint {
+export interface GrowthChartDataPoint {
   [key: string]: string | number;
 }
 
