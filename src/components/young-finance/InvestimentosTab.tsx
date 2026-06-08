@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, TrendingUp, BarChart2, CheckCircle, DollarSign, HelpCircle } from 'lucide-react';
+import { Shield, TrendingUp, BarChart2, CheckCircle, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const InvestimentosTab: React.FC = () => {

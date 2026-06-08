@@ -9,6 +9,7 @@ interface SliderFieldProps {
   step: number;
   onChange: (value: number) => void;
   prefix?: string;
+  hint?: string;
 }
 
 export const SliderField: React.FC<SliderFieldProps> = ({
@@ -19,6 +20,7 @@ export const SliderField: React.FC<SliderFieldProps> = ({
   step,
   onChange,
   prefix = '',
+  hint = '',
 }) => {
   // Estado local para sincronização imediata do input
   const [inputValue, setInputValue] = useState(String(value));
@@ -131,5 +133,6 @@ export const SliderField: React.FC<SliderFieldProps> = ({
         <span>{prefix}{max.toLocaleString()}</span>
       </div>
     </div>
+    {hint && <p className="text-xs text-youfing-tertiary mt-1">{hint}</p>}
   );
 };

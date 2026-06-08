@@ -345,7 +345,7 @@ export default function AssistantTab() {
                             color: "#F1F5F9",
                           }}
                           labelFormatter={(l) => `Ano ${l}`}
-                          formatter={(value: number, name) => [fmtBRL(value), name]}
+                          formatter={(value: any, name: any) => [fmtBRL(Number(value ?? 0)), name ?? '']}
                         />
 
                         <Area type="monotone" dataKey="total" name="Patrimônio Total" stroke="#10b981" strokeWidth={2} fill="url(#colorTotal)" order={2} />
