@@ -260,7 +260,7 @@ export function ScenariosTab() {
                     formatter={(value: any, name: any) => [fmtBRL(Number(value || 0)), name]}
                   />
                   {sortedScenarios.map((s) => (
-                    <Area key={s.id} type="monotone" dataKey={s.id} stroke={COLORS[s.color].hex} strokeWidth={2.5} fill={`url(#g${s.id})`} />
+                    <Area key={s.id} name={s.name} type="monotone" dataKey={s.id} stroke={COLORS[s.color].hex} strokeWidth={2.5} fill={`url(#g${s.id})`} />
                   ))}
                 </AreaChart>
               </ResponsiveContainer>
