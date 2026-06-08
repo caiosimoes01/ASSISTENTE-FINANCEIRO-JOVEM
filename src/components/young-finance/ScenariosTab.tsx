@@ -251,7 +251,7 @@ export function ScenariosTab() {
                     contentStyle={{ background: "#111827", border: "1px solid #1E2D45", borderRadius: "0.75rem", fontSize: "12px", color: "#F1F5F9" }}
                     labelFormatter={(l) => `Ano ${l}`}
                     itemSorter={(item) => Number(item.value) * -1}
-                    formatter={(value: any) => [fmtBRL(Number(value ?? 0)), '']}
+                    formatter={(value: any) => [fmtBRL(Number(value ?? 0)), "Patrimônio"]}
                   />
                   {scenarios.map((s) => (
                     <Area key={s.id} type="monotone" dataKey={s.id} stroke={COLORS[s.color].hex} strokeWidth={2.5} fill={`url(#g${s.id})`} />
